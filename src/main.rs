@@ -24,6 +24,8 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Failed to connect to database");
 
+    sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+
     let data = web::Data::new(AppData {
         snowflake: SnowflakeBuilder {
             epoch: EPOCH,
