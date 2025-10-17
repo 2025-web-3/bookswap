@@ -1,9 +1,12 @@
 use {
     crate::{
+        models::{new_hex_id, session::Session, user::User},
         routes::{HttpError, Result},
+        utils::authorization::extract_ip_from_request,
         App,
     },
     actix_web::{web, HttpRequest, HttpResponse},
+    regex::Regex,
     serde::{Deserialize, Serialize},
     validator::Validate,
 };
@@ -15,6 +18,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 #[derive(Serialize, Deserialize, Validate)]
 struct RegisterPayload {
     pub username: String,
+    pub email: String,
     pub first_name: String,
     pub second_name: String,
     pub school_name: Option<String>,
@@ -24,7 +28,7 @@ struct RegisterPayload {
 #[derive(Serialize, Deserialize)]
 struct RegisterResponse {
     pub token: String,
-    pub user: String,
+    pub user: User,
 }
 
 async fn register(
@@ -45,9 +49,32 @@ async fn register(
         return Err(HttpError::TakenUsername);
     }
 
-    if payload.password.is_empty() {
+    let strong_password = Regex::new(r"^[a-zA-Z0-9!@#$&()\\-`.+,/]*${12,}").unwrap();
+    if !strong_password.is_match(&payload.password) {
         return Err(HttpError::WeekPassword);
     }
 
-    Ok(HttpResponse::Ok().json("{}"))
+    let id = app.snowflake.lock().unwrap().build();
+
+    let user = User::new(
+        id,
+        &payload.username,
+        &payload.email,
+        &payload.first_name,
+        &payload.second_name,
+        &payload.password,
+        payload.school_name.clone(),
+    )
+    .save(&app.pool)
+    .await?;
+
+    let token = new_hex_id(32);
+    Session::new(id, token.clone(), extract_ip_from_request(&request)?)
+        .save(&app.pool)
+        .await?;
+
+    Ok(HttpResponse::Ok().json(RegisterResponse {
+        user: user,
+        token: token,
+    }))
 }

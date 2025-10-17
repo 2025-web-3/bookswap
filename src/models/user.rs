@@ -1,9 +1,18 @@
-use serde::{Deserialize, Serialize};
+use {
+    crate::{
+        routes::{HttpError, Result as HttpResult},
+        utils::snowflake::Snowflake,
+    },
+    serde::{Deserialize, Serialize},
+    sha256::digest,
+    sqlx::SqliteExecutor,
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct User {
-    pub id: i64,
+    pub id: Snowflake,
     pub username: String,
+    pub email: String,
     pub first_name: String,
     pub second_name: String,
     #[serde(default, skip)]
@@ -13,7 +22,33 @@ pub struct User {
 }
 
 impl User {
-    pub async fn new() -> Option<Self> {
-        return None;
+    pub fn new(
+        id: Snowflake,
+        username: &str,
+        email: &str,
+        first_name: &str,
+        second_name: &str,
+        password: &str,
+        school: Option<String>,
+    ) -> Self {
+        Self {
+            id,
+            username: username.to_string(),
+            email: email.to_string(),
+            first_name: first_name.to_string(),
+            second_name: second_name.to_string(),
+            password_hash: digest(password),
+            school_name: school,
+            permissions: 0,
+        }
+    }
+
+    pub async fn save<'a, E: SqliteExecutor<'a>>(self, executor: E) -> HttpResult<Self> {
+        sqlx::query!(r#"INSERT INTO users(id, username, email, first_name, second_name, password_hash, school_name) VALUES ($1, $2, $3, $4, $5, $6, $7)"#,
+            self.id.0, self.username, self.email, self.first_name, self.second_name, self.password_hash, self.school_name
+        )
+            .execute(executor).await
+            .map(|_| self)
+            .map_err(HttpError::Database)
     }
 }
