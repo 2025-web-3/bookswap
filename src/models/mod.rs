@@ -2,6 +2,7 @@ use nanoid::nanoid;
 
 pub mod database;
 pub mod error;
+pub mod session;
 pub mod user;
 
 const _SESSION_ID_ALPHABET: [char; 16] = [
