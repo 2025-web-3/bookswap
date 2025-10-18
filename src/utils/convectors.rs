@@ -22,11 +22,11 @@ macro_rules! bitflags_convector {
             }
         }
 
-        impl Decode<'_, Postgres> for $type {
+        impl Decode<'_, Sqlite> for $type {
             fn decode(
-                value: PgValueRef<'_>,
+                value: SqliteValueRef<'_>,
             ) -> Result<Self, Box<dyn std::error::Error + 'static + Send + Sync>> {
-                let s: $int_type = sqlx::Decode::<'_, Postgres>::decode(value)?;
+                let s: $int_type = sqlx::Decode::<'_, Sqlite>::decode(value)?;
 
                 Ok($type::from_bits_truncate(s))
             }

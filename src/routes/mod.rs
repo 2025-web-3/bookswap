@@ -11,9 +11,7 @@ mod auth;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
-        web::scope("api/v1")
-            .configure(auth::config)
-            .wrap(from_fn(authorization_middleware)),
+        web::scope("api/v1").configure(auth::config).wrap(from_fn(authorization_middleware)),
     );
 }
 
@@ -37,6 +35,8 @@ pub enum HttpError {
     MissingAccess,
     #[error("The username is already taken")]
     TakenUsername,
+    #[error("The email is already taken")]
+    TakenEmail,
     #[error("Too week password")]
     WeekPassword,
     #[error("Unauthorized")]
@@ -54,6 +54,7 @@ impl actix_web::ResponseError for HttpError {
             | HttpError::Path(..)
             | HttpError::Header(..)
             | HttpError::TakenUsername
+            | HttpError::TakenEmail
             | HttpError::WeekPassword
             | HttpError::InvalidCredentials(..) => StatusCode::BAD_REQUEST,
 
@@ -79,6 +80,7 @@ impl actix_web::ResponseError for HttpError {
                 HttpError::InvalidCredentials(..) => 20005,
                 HttpError::Database(..) => 20007,
                 HttpError::TakenUsername => 20010,
+                HttpError::TakenEmail => 20011,
 
                 // The 3xxxx class of error code indicates that authorization process failed
                 HttpError::Unauthorized => 30000,

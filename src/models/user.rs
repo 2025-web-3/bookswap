@@ -1,12 +1,24 @@
 use {
     crate::{
+        bitflags_convector,
         routes::{HttpError, Result as HttpResult},
         utils::snowflake::Snowflake,
     },
+    bitflags::bitflags,
     serde::{Deserialize, Serialize},
     sha256::digest,
-    sqlx::SqliteExecutor,
+    sqlx::{sqlite::SqliteValueRef, Decode, Sqlite, SqliteExecutor},
 };
+
+bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct Permissions: i64 {
+        /// Allows all permissions and grants access to all endpoints (This is dangerous permission to grant)
+        const ADMINISTRATOR = i64::MAX;
+    }
+}
+
+bitflags_convector!(Permissions, i64);
 
 #[derive(Serialize, Deserialize)]
 pub struct User {
@@ -18,18 +30,13 @@ pub struct User {
     #[serde(default, skip)]
     pub password_hash: String,
     pub school_name: Option<String>,
-    pub permissions: i64,
+    pub permissions: Permissions,
 }
 
 impl User {
     pub fn new(
-        id: Snowflake,
-        username: &str,
-        email: &str,
-        first_name: &str,
-        second_name: &str,
-        password: &str,
-        school: Option<String>,
+        id: Snowflake, username: &str, email: &str, first_name: &str, second_name: &str,
+        password: &str, school: Option<String>,
     ) -> Self {
         Self {
             id,
@@ -39,7 +46,7 @@ impl User {
             second_name: second_name.to_string(),
             password_hash: digest(password),
             school_name: school,
-            permissions: 0,
+            permissions: Permissions::empty(),
         }
     }
 
