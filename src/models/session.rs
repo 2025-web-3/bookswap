@@ -3,7 +3,7 @@ use {
         routes::{HttpError, Result as HttpResult},
         utils::snowflake::Snowflake,
     },
-    chrono::{DateTime, TimeZone, Utc},
+    chrono::{NaiveDate, NaiveDateTime, NaiveTime},
     serde::{Deserialize, Serialize},
     sha256::digest,
     sqlx::SqliteExecutor,
@@ -14,7 +14,7 @@ pub struct Session {
     pub user_id: Snowflake,
     pub token_hash: String,
     pub ip_address: String,
-    pub created_at: DateTime<Utc>,
+    pub created_at: NaiveDateTime,
 }
 
 impl Session {
@@ -23,13 +23,16 @@ impl Session {
             user_id,
             token_hash: digest(token),
             ip_address: ip,
-            created_at: Utc.with_ymd_and_hms(0, 1, 1, 0, 0, 0).unwrap(),
+            created_at: NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(1, 1, 1).unwrap(),
+                NaiveTime::from_hms_opt(0, 0, 0).unwrap(),
+            ),
         }
     }
 
     pub async fn save<'a, E: SqliteExecutor<'a>>(self, executor: E) -> HttpResult<Self> {
         sqlx::query!(
-            r#"INSERT INTO sessions(token, user_id, ip_address) VALUES ($1, $2, $3)"#,
+            r#"INSERT INTO sessions(token_hash, user_id, ip_address) VALUES ($1, $2, $3)"#,
             self.token_hash,
             self.user_id.0,
             self.ip_address
