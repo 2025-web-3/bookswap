@@ -8,10 +8,14 @@ use {
 };
 
 mod auth;
+mod users;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
-        web::scope("api/v1").configure(auth::config).wrap(from_fn(authorization_middleware)),
+        web::scope("api/v1")
+            .configure(auth::config)
+            .configure(users::config)
+            .wrap(from_fn(authorization_middleware)),
     );
 }
 
