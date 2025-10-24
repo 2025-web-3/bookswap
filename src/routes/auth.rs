@@ -1,14 +1,16 @@
 use {
     crate::{
-        models::{session::Session, user::User},
+        models::{
+            requests::{LoginPayload, RegisterPayload},
+            session::Session,
+            user::User,
+        },
         routes::{HttpError, Result},
-        utils::authorization::extract_ip_from_request,
+        utils::authorization::{extract_ip_from_request, is_valid_password, new_token},
         App,
     },
     actix_web::{web, HttpRequest, HttpResponse},
-    nanoid::nanoid,
-    regex::Regex,
-    serde::{Deserialize, Serialize},
+    serde::Serialize,
     sha256::digest,
     validator::Validate,
 };
@@ -21,42 +23,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     );
 }
 
-const _TOKEN_CHARS: [char; 33] = [
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C',
-    'D', 'E', 'F', 'k', 'n', 'm', 'K', 'N', 'M', 'h', 'H', 'l', 'L', '.',
-];
-
-fn new_token(length: usize) -> String {
-    nanoid!(length, &_TOKEN_CHARS)
-}
-
-#[derive(Serialize, Deserialize, Validate)]
-struct RegisterPayload {
-    #[validate(length(
-        min = 2,
-        max = 32,
-        message = "Username length must be between 2 and 32 characters"
-    ))]
-    pub username: String,
-    #[validate(email(message = "Incorrect email address"))]
-    pub email: String,
-    #[validate(length(
-        min = 1,
-        max = 24,
-        message = "First name length must be between 1 and 24 characters"
-    ))]
-    pub first_name: String,
-    #[validate(length(
-        min = 1,
-        max = 24,
-        message = "Second name length must be between 1 and 24 characters"
-    ))]
-    pub second_name: String,
-    pub school_name: Option<String>,
-    pub password: String,
-}
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 struct AuthResponse {
     pub token: String,
     pub user: User,
@@ -75,8 +42,7 @@ async fn register(
         return Err(HttpError::TakenEmail);
     }
 
-    let strong_password = Regex::new(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$").unwrap();
-    if !strong_password.is_match(&payload.password) {
+    if !is_valid_password(&payload.password) {
         return Err(HttpError::WeekPassword);
     }
 
@@ -98,19 +64,6 @@ async fn register(
     Session::new(id, token.clone(), extract_ip_from_request(&request)?).save(&app.pool).await?;
 
     Ok(HttpResponse::Ok().json(AuthResponse { user: user, token: token }))
-}
-
-#[derive(Serialize, Deserialize, Validate)]
-struct LoginPayload {
-    #[validate(length(
-        min = 2,
-        max = 32,
-        message = "Username length must be between 2 and 32 characters"
-    ))]
-    pub username: Option<String>,
-    #[validate(email)]
-    pub email: Option<String>,
-    pub password: String,
 }
 
 async fn login(
