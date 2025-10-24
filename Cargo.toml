@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 actix = "0.13.5"
 actix-web = "4.11.0"
-tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.48.0", features = ["macros", "rt-multi-thread"] }
 sqlx = { version = "0.8.6", features = [
     "runtime-tokio-native-tls",
 	"sqlite",
@@ -24,7 +24,8 @@ serde_json = "1.0.145"
 thiserror = "2.0.17"
 chrono = { version = "0.4.42", features = ["serde"] }
 regex = "1.12.2"
-bitflags = "2.9.4"
+bitflags = "2.10.0"
 sha256 = "1.6.0"
 nanoid = "0.4.0"
 rand = "0.9.2"
+openlibrary-rs = "0.3.1"
