@@ -18,6 +18,13 @@ impl Database {
         Self { pool }
     }
 
+    pub async fn fetch_user_by_id(&self, user_id: Snowflake) -> Option<User> {
+        sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", user_id.0)
+            .fetch_optional(&self.pool)
+            .await
+            .ok()?
+    }
+
     pub async fn fetch_user_by_username(&self, username: &str) -> Option<User> {
         sqlx::query_as!(User, "SELECT * FROM users WHERE username = $1", username)
             .fetch_optional(&self.pool)
@@ -42,16 +49,8 @@ impl Database {
         )
         .fetch_one(&self.pool)
         .await
-        .map_or_else(
-            |_| false,
-            |v| {
-                if v > 0 {
-                    true
-                } else {
-                    false
-                }
-            },
-        )
+        .unwrap_or(0)
+            > 0
     }
 
     pub async fn fetch_session_by_token_and_ip(&self, token: &str, ip: &str) -> Option<Session> {
@@ -66,5 +65,12 @@ impl Database {
         .fetch_optional(&self.pool)
         .await
         .ok()?
+    }
+
+    pub async fn fetch_user_by_token_and_ip(&self, token: &str, ip: &str) -> Option<User> {
+        let user_id =
+            self.fetch_session_by_token_and_ip(token, ip).await.map(|user| user.user_id)?;
+
+        self.fetch_user_by_id(user_id).await
     }
 }
