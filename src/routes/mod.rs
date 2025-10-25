@@ -8,6 +8,7 @@ use {
 };
 
 mod auth;
+mod books;
 mod users;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -15,6 +16,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         web::scope("api/v1")
             .configure(auth::config)
             .configure(users::config)
+            .configure(books::config)
             .wrap(from_fn(authorization_middleware)),
     );
 }
@@ -23,6 +25,8 @@ pub type Result<T> = core::result::Result<T, HttpError>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum HttpError {
+    #[error("Unknown Book")]
+    UnknownBook,
     #[error("{0}")]
     Payload(#[from] actix_web::error::JsonPayloadError),
     #[error("Validation error: {0}")]
@@ -52,6 +56,8 @@ pub enum HttpError {
 impl actix_web::ResponseError for HttpError {
     fn status_code(&self) -> StatusCode {
         match self {
+            HttpError::UnknownBook => StatusCode::NOT_FOUND,
+
             HttpError::Payload(..)
             | HttpError::Validation(..)
             | HttpError::Query(..)
@@ -74,6 +80,7 @@ impl actix_web::ResponseError for HttpError {
         HttpResponse::build(self.status_code()).json(error::Error {
             code: match self {
                 // The 1xxxx class of error code indicates that some data wasn't found
+                HttpError::UnknownBook => 10000,
 
                 // The 2xxxx class of error code indicates that data was malformed or invalid
                 HttpError::Payload(..) => 20000,

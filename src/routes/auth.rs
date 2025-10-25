@@ -60,7 +60,8 @@ async fn register(
     .save(&app.pool)
     .await?;
 
-    let token = new_token(128);
+    // NOTE: Token length must be 128, 2 was set for debugging purposes.
+    let token = new_token(2);
     Session::new(id, token.clone(), extract_ip_from_request(&request)?).save(&app.pool).await?;
 
     Ok(HttpResponse::Ok().json(AuthResponse { user: user, token: token }))

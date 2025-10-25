@@ -13,6 +13,18 @@ use {
 bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq)]
     pub struct Permissions: i64 {
+        /// Allows requesting books from other users
+        const REQUEST_BOOKS = 1 << 0;
+        /// Allows creatin of new books
+        const CREATE_BOOKS = 1 << 1;
+        /// Allows managment of books
+        const MANAGE_BOOKS = 1 << 2;
+        /// Allows for the addition of reviews for books, book holders
+        const ADD_REVIEWS = 1 << 3;
+        /// Allows for deletion reviews
+        const DELETE_REVIEWS = 1 << 4;
+        /// Allows for editing (reseting passwords, changing permissions), deleting, viewing all users on platform
+        const MODERATE_USERS = 1 << 6;
         /// Allows all permissions and grants access to all endpoints (This is dangerous permission to grant)
         const ADMINISTRATOR = i64::MAX;
     }
@@ -57,5 +69,10 @@ impl User {
             .execute(executor).await
             .map(|_| self)
             .map_err(HttpError::Database)
+    }
+
+    /// Checks whether user has required [`Permissions`]
+    pub fn has_permission(&self, permission: Permissions) -> bool {
+        self.permissions.contains(permission)
     }
 }
