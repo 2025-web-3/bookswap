@@ -1,6 +1,10 @@
 use {
     crate::{
-        models::{session::Session, user::User},
+        models::{
+            book::{Book, BookSharing},
+            session::Session,
+            user::User,
+        },
         utils::snowflake::Snowflake,
     },
     sha256::digest,
@@ -18,7 +22,7 @@ impl Database {
         Self { pool }
     }
 
-    pub async fn fetch_user_by_id(&self, user_id: Snowflake) -> Option<User> {
+    pub async fn fetch_user(&self, user_id: Snowflake) -> Option<User> {
         sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", user_id.0)
             .fetch_optional(&self.pool)
             .await
@@ -71,6 +75,33 @@ impl Database {
         let user_id =
             self.fetch_session_by_token_and_ip(token, ip).await.map(|user| user.user_id)?;
 
-        self.fetch_user_by_id(user_id).await
+        self.fetch_user(user_id).await
+    }
+
+    pub async fn fetch_book(&self, book_id: Snowflake) -> Option<Book> {
+        sqlx::query_as!(Book, "SELECT * FROM books WHERE id = $1", book_id.0)
+            .fetch_optional(&self.pool)
+            .await
+            .ok()?
+    }
+
+    pub async fn fetch_book_by_isbn(&self, isbn: &str) -> Option<Book> {
+        sqlx::query_as!(Book, "SELECT * FROM books WHERE isbn = $1", isbn)
+            .fetch_optional(&self.pool)
+            .await
+            .ok()?
+    }
+
+    pub async fn fetch_holding_by_book_and_holder_id(
+        &self, book_id: Snowflake, holder_id: Snowflake,
+    ) -> Option<BookSharing> {
+        sqlx::query_as!(BookSharing,
+            r#"SELECT h.id, h.comment, h.holder_id, (SELECT json_object(*) FROM books b WHERE b.id = h.book_id) AS "book!: Book"
+            FROM books_sharing h WHERE h.holder_id = $1 AND h.book_id = $2"#,
+            holder_id.0, book_id.0
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .ok()?
     }
 }
