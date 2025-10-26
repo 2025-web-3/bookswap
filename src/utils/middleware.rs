@@ -7,19 +7,19 @@ use {
     actix_web::{
         body::MessageBody,
         dev::{ServiceRequest, ServiceResponse},
-        http::header::AUTHORIZATION,
+        http::{header::AUTHORIZATION, Method},
         middleware::Next,
         web, Error, HttpMessage,
     },
 };
 
-const AUTHLESS_ROUTES: [&str; 1] = ["/auth"];
+const AUTHLESS_ROUTES: [(Method, &str); 2] = [(Method::POST, "/auth"), (Method::GET, "/books")];
 
 pub async fn authorization_middleware(
     req: ServiceRequest, next: Next<impl MessageBody>,
 ) -> Result<ServiceResponse<impl MessageBody>, Error> {
     for route in AUTHLESS_ROUTES {
-        if req.path().contains(route) {
+        if req.method() == route.0 && req.path().contains(route.1) {
             return Ok(next.call(req).await?);
         };
     }
