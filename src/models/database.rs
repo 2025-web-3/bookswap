@@ -1,13 +1,12 @@
 use {
     crate::{
         models::{
-            book::{Book, BookSharing},
+            book::{Book, BookSharing, BookSharingRaw},
             session::Session,
             user::User,
         },
         utils::snowflake::Snowflake,
     },
-    sha256::digest,
     sqlx::SqlitePool,
 };
 
@@ -58,8 +57,6 @@ impl Database {
     }
 
     pub async fn fetch_session_by_token_and_ip(&self, token: &str, ip: &str) -> Option<Session> {
-        let token = digest(token);
-
         sqlx::query_as!(
             Session,
             "SELECT * FROM sessions WHERE token_hash = $1 AND ip_address = $2",
@@ -94,14 +91,69 @@ impl Database {
 
     pub async fn fetch_holding_by_book_and_holder_id(
         &self, book_id: Snowflake, holder_id: Snowflake,
-    ) -> Option<BookSharing> {
-        sqlx::query_as!(BookSharing,
-            r#"SELECT h.id, h.comment, h.holder_id, (SELECT json_object(*) FROM books b WHERE b.id = h.book_id) AS "book!: Book"
-            FROM books_sharing h WHERE h.holder_id = $1 AND h.book_id = $2"#,
-            holder_id.0, book_id.0
+    ) -> Option<Vec<BookSharing>> {
+        let raws = sqlx::query_as!(
+            BookSharingRaw,
+            r#"SELECT * FROM books_sharing WHERE holder_id = $1 AND book_id = $2"#,
+            holder_id.0,
+            book_id.0
         )
-        .fetch_optional(&self.pool)
+        .fetch_all(&self.pool)
         .await
-        .ok()?
+        .ok()?;
+
+        let mut sharings = Vec::with_capacity(raws.len());
+
+        for raw in raws {
+            if let Some(book) = self.fetch_book(raw.book_id).await {
+                sharings.push(BookSharing {
+                    id: raw.id,
+                    book,
+                    holder_id: raw.holder_id,
+                    comment: raw.comment,
+                    condition: raw.condition.into(),
+                });
+            }
+        }
+
+        Some(sharings)
+    }
+
+    pub async fn fetch_all_unique_shared_books(&self, holder_id: Snowflake) -> Option<Vec<Book>> {
+        let unique_book_ids_raw: Vec<(i64,)> =
+            sqlx::query_as(r#"SELECT DISTINCT book_id FROM books_sharing WHERE holder_id = $1"#)
+                .bind(holder_id.0)
+                .fetch_all(&self.pool)
+                .await
+                .ok()?;
+
+        let mut books = Vec::with_capacity(unique_book_ids_raw.len());
+
+        for (book_id,) in unique_book_ids_raw {
+            if let Some(book) = self.fetch_book(book_id.into()).await {
+                books.push(book);
+            }
+        }
+
+        Some(books)
+    }
+
+    pub async fn fetch_holders_by_book_id(&self, book_id: Snowflake) -> Option<Vec<User>> {
+        let unique_holder_ids_raw: Vec<(i64,)> =
+            sqlx::query_as(r#"SELECT DISTINCT holder_id FROM books_sharing WHERE book_id = $1"#)
+                .bind(book_id.0)
+                .fetch_all(&self.pool)
+                .await
+                .ok()?;
+
+        let mut holders = Vec::with_capacity(unique_holder_ids_raw.len());
+
+        for (holder_id,) in unique_holder_ids_raw {
+            if let Some(user) = self.fetch_user(holder_id.into()).await {
+                holders.push(user);
+            }
+        }
+
+        Some(holders)
     }
 }
