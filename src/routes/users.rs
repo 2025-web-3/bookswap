@@ -1,12 +1,14 @@
 use {
     crate::{
-        models::{book::Book, user::User},
+        models::{
+            book::{Book, BookSharing},
+            requests::NewBook,
+            user::{Permissions, User},
+        },
         routes::{HttpError, Result},
-        utils::openlibrary::get_open_library_books,
         App,
     },
-    actix_web::{web, HttpRequest, HttpResponse},
-    serde::Deserialize,
+    actix_web::{web, HttpResponse},
 };
 
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -18,7 +20,12 @@ pub fn config(cfg: &mut web::ServiceConfig) {
                     .route("books/requests", web::get().to(get_current_user_book_requests))
                     .route("books", web::post().to(add_new_book)),
             )
-            .route("{user_id}/books/{book_id}", web::get().to(get_sharing_by_user_and_book)),
+            .service(
+                web::scope("{user_id}")
+                    .route("books/{book_id}", web::get().to(get_sharing_by_user_and_book))
+                    .route("books/{book_id}/request", web::post().to(request_book))
+                    .route("books", web::get().to(get_all_avalible_books_from_user)),
+            ),
     );
 }
 
@@ -37,68 +44,68 @@ async fn get_current_user_book_requests(
 async fn get_sharing_by_user_and_book(
     path: web::Path<(i64, i64)>, app: web::Data<App>,
 ) -> Result<HttpResponse> {
-    let message = app
+    let sharings = app
         .database
-        .fetch_holding_by_book_and_holder_id(path.to_owned().0.into(), path.to_owned().1.into())
+        .fetch_holding_by_book_and_holder_id(path.to_owned().1.into(), path.to_owned().0.into())
         .await
         .ok_or(HttpError::UnknownBook)?;
 
-    Ok(HttpResponse::Ok().json(message))
+    Ok(HttpResponse::Ok().json(sharings))
 }
 
-#[derive(Deserialize)]
-struct NewBook {
-    pub isbn: String,
+async fn get_all_avalible_books_from_user(
+    path: web::Path<i64>, app: web::Data<App>,
+) -> Result<HttpResponse> {
+    let sharings = app
+        .database
+        .fetch_all_unique_shared_books(path.to_owned().into())
+        .await
+        .ok_or(HttpError::UnknownBook)?;
+
+    Ok(HttpResponse::Ok().json(sharings))
 }
 
 async fn add_new_book(
-    _request: HttpRequest, payload: web::Json<NewBook>, app: web::Data<App>,
-    credentials: Option<web::ReqData<User>>,
+    payload: web::Json<NewBook>, app: web::Data<App>, credentials: Option<web::ReqData<User>>,
 ) -> Result<HttpResponse> {
-    let _me = credentials.ok_or(HttpError::Unauthorized)?;
+    let me = credentials.ok_or(HttpError::Unauthorized)?;
+
+    if !me.has_permission(Permissions::CREATE_BOOKS) {
+        return Err(HttpError::MissingAccess);
+    }
 
     let book = if let Some(book) = app.database.fetch_book_by_isbn(&payload.isbn).await {
         book
     } else {
         let id = app.snowflake.lock().unwrap().build();
-
-        let isbn_key = format!("ISBN:{}", &payload.isbn);
-        let bibkeys = vec![isbn_key.clone()];
-
-        let mut book_map =
-            get_open_library_books(bibkeys).await.map_err(|_| HttpError::UnknownBook)?;
-        let book_data = book_map.remove(&isbn_key).ok_or_else(|| HttpError::UnknownBook)?;
-        let title_opt = book_data.title.as_deref().unwrap_or("No Title");
-
-        let description_ref = book_data
-            .excerpts
-            .as_ref()
-            .and_then(|e| e.first())
-            .map(|e| e.text.as_str())
-            .unwrap_or("No Description");
-
-        let author_name = book_data
-            .authors
-            .as_ref()
-            .and_then(|a| a.first())
-            .map(|a| a.name.as_str())
-            .unwrap_or("Unknown Author");
-
-        let subject_name = book_data.subjects.and_then(|s| s.first().map(|s| s.name.clone()));
-        let cover_url = book_data.cover.and_then(|cover| cover.medium);
-
-        Book::new(
-            id,
-            Some(payload.isbn.clone()),
-            title_opt,
-            description_ref,
-            author_name,
-            subject_name,
-            book_data.number_of_pages,
-            cover_url,
-            None,
-        )
+        Book::from_isbn(id, &payload.isbn).await?.save(&app.pool).await?
     };
 
-    Ok(HttpResponse::Ok().json(book))
+    let sharing_id = app.snowflake.lock().unwrap().build();
+
+    let sharing = BookSharing::new(
+        sharing_id,
+        book,
+        payload.comment.clone(),
+        me.id,
+        payload.condition.clone(),
+    )
+    .save(&app.pool)
+    .await?;
+
+    Ok(HttpResponse::Ok().json(sharing))
+}
+
+async fn request_book(
+    path: web::Path<(i64, i64)>, app: web::Data<App>, credentials: Option<web::ReqData<User>>,
+) -> Result<HttpResponse> {
+    let me = credentials.ok_or(HttpError::Unauthorized)?;
+
+    let sharings = app
+        .database
+        .fetch_holding_by_book_and_holder_id(path.to_owned().1.into(), path.to_owned().0.into())
+        .await
+        .ok_or(HttpError::UnknownBook)?;
+
+    Ok(HttpResponse::Ok().json(sharings))
 }

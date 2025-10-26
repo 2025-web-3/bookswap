@@ -58,7 +58,9 @@ impl User {
             second_name: second_name.to_string(),
             password_hash: digest(password),
             school_name: school,
-            permissions: Permissions::empty(),
+            permissions: Permissions::ADD_REVIEWS
+                | Permissions::REQUEST_BOOKS
+                | Permissions::CREATE_BOOKS,
         }
     }
 

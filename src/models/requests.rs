@@ -1,4 +1,4 @@
-use {serde::Deserialize, validator::Validate};
+use {crate::models::book::BookCondition, serde::Deserialize, validator::Validate};
 
 #[derive(Deserialize, Validate)]
 pub struct RegisterPayload {
@@ -37,4 +37,16 @@ pub struct LoginPayload {
     #[validate(email(message = "Incorrect email address"))]
     pub email: Option<String>,
     pub password: String,
+}
+
+#[derive(Deserialize, Validate)]
+pub struct NewBook {
+    #[validate(length(
+        min = 16,
+        max = 2048,
+        message = "Sharing length must be between 16 and 2048 characters"
+    ))]
+    pub isbn: String,
+    pub comment: Option<String>,
+    pub condition: BookCondition,
 }
