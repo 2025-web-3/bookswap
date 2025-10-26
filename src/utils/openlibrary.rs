@@ -85,14 +85,10 @@ pub struct BookData {
 
 type OpenLibraryResponse = HashMap<String, BookData>;
 
-pub async fn get_open_library_books(
-    bibkeys: Vec<String>,
-) -> Result<OpenLibraryResponse, reqwest::Error> {
+pub async fn get_open_library_books(isbn: String) -> Result<OpenLibraryResponse, reqwest::Error> {
     const BASE_URL: &str = "https://openlibrary.org/api/books";
 
-    let keys_string = bibkeys.join(",");
-
-    let url = format!("{}?bibkeys={}&format=json&jscmd=data", BASE_URL, keys_string);
+    let url = format!("{}?bibkeys={}&format=json&jscmd=data", BASE_URL, isbn);
 
     let client = reqwest::Client::new();
 
