@@ -5,7 +5,6 @@ use {
     },
     chrono::{NaiveDate, NaiveDateTime, NaiveTime},
     serde::{Deserialize, Serialize},
-    sha256::digest,
     sqlx::SqliteExecutor,
 };
 
@@ -21,7 +20,7 @@ impl Session {
     pub fn new(user_id: Snowflake, token: String, ip: String) -> Self {
         Self {
             user_id,
-            token_hash: digest(token),
+            token_hash: token,
             ip_address: ip,
             created_at: NaiveDateTime::new(
                 NaiveDate::from_ymd_opt(1, 1, 1).unwrap(),
