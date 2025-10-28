@@ -48,5 +48,5 @@ pub struct NewBook {
     ))]
     pub isbn: String,
     pub comment: Option<String>,
-    pub condition: BookCondition,
+    pub condition: i64,
 }

@@ -1,7 +1,7 @@
 use {
     crate::{
         models::{
-            book::{Book, BookSharing},
+            book::{Book, BookRequest, BookSharing},
             requests::NewBook,
             user::{Permissions, User},
         },
@@ -9,6 +9,7 @@ use {
         App,
     },
     actix_web::{web, HttpResponse},
+    serde::Deserialize,
 };
 
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -17,6 +18,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .service(
                 web::scope("@me")
                     .route("", web::get().to(get_current_user))
+                    .route("requests", web::get().to(get_current_user_requested_books))
                     .route("books/requests", web::get().to(get_current_user_book_requests))
                     .route("books", web::post().to(add_new_book)),
             )
@@ -41,12 +43,23 @@ async fn get_current_user_book_requests(
     return Err(HttpError::MissingAccess);
 }
 
+async fn get_current_user_requested_books(
+    app: web::Data<App>, credentials: Option<web::ReqData<User>>,
+) -> Result<HttpResponse> {
+    let me = credentials.ok_or(HttpError::Unauthorized)?;
+
+    let reqs =
+        app.database.fetch_user_requested_books(me.id).await.ok_or(HttpError::UnknownBook)?;
+
+    Ok(HttpResponse::Ok().json(reqs))
+}
+
 async fn get_sharing_by_user_and_book(
     path: web::Path<(i64, i64)>, app: web::Data<App>,
 ) -> Result<HttpResponse> {
     let sharings = app
         .database
-        .fetch_holding_by_book_and_holder_id(path.to_owned().1.into(), path.to_owned().0.into())
+        .fetch_sharings_by_book_and_holder_id(path.1.into(), path.0.into())
         .await
         .ok_or(HttpError::UnknownBook)?;
 
@@ -88,7 +101,7 @@ async fn add_new_book(
         book,
         payload.comment.clone(),
         me.id,
-        payload.condition.clone(),
+        payload.condition.clone().into(),
     )
     .save(&app.pool)
     .await?;
@@ -96,16 +109,52 @@ async fn add_new_book(
     Ok(HttpResponse::Ok().json(sharing))
 }
 
+#[derive(Deserialize)]
+struct BookSharingIdQuery {
+    pub sharing_id: Option<i64>,
+}
+
+/// TODO: Add new errors for specific situations
 async fn request_book(
-    path: web::Path<(i64, i64)>, app: web::Data<App>, credentials: Option<web::ReqData<User>>,
+    path: web::Path<(i64, i64)>, query: web::Query<BookSharingIdQuery>, app: web::Data<App>,
+    credentials: Option<web::ReqData<User>>,
 ) -> Result<HttpResponse> {
     let me = credentials.ok_or(HttpError::Unauthorized)?;
 
+    if !me.has_permission(Permissions::REQUEST_BOOKS) {
+        return Err(HttpError::MissingAccess);
+    }
+
     let sharings = app
         .database
-        .fetch_holding_by_book_and_holder_id(path.to_owned().1.into(), path.to_owned().0.into())
+        .fetch_sharings_by_book_and_holder_id(path.1.into(), path.0.into())
         .await
         .ok_or(HttpError::UnknownBook)?;
 
-    Ok(HttpResponse::Ok().json(sharings))
+    if sharings.len() > 1 && query.sharing_id.is_none() {
+        return Err(HttpError::MissingAccess);
+    }
+
+    let reqs =
+        app.database.fetch_user_requested_books(me.id).await.ok_or(HttpError::UnknownBook)?;
+
+    if reqs.iter().filter(|x| x.book_id == path.1.into()).count() > 0 {
+        return Err(HttpError::MissingAccess);
+    }
+
+    let request_id = app.snowflake.lock().unwrap().build();
+
+    let req = if query.sharing_id.is_none() {
+        let f = sharings.first().unwrap();
+        BookRequest::new(request_id, f.id, f.book.id, me.id).save(&app.pool).await?
+    } else {
+        let sharing = app
+            .database
+            .fetch_sharing(query.sharing_id.unwrap().into())
+            .await
+            .ok_or(HttpError::UnknownBook)?;
+        BookRequest::new(request_id, sharing.id, sharing.book.id, me.id)
+    };
+
+    Ok(HttpResponse::Ok().json(req))
 }
