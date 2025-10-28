@@ -153,7 +153,7 @@ async fn request_book(
             .fetch_sharing(query.sharing_id.unwrap().into())
             .await
             .ok_or(HttpError::UnknownBook)?;
-        BookRequest::new(request_id, sharing.id, sharing.book.id, me.id)
+        BookRequest::new(request_id, sharing.id, sharing.book.id, me.id).save(&app.pool).await?
     };
 
     Ok(HttpResponse::Ok().json(req))
