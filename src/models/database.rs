@@ -1,7 +1,7 @@
 use {
     crate::{
         models::{
-            book::{Book, BookSharing, BookSharingRaw},
+            book::{Book, BookRequest, BookSharing, BookSharingRaw},
             session::Session,
             user::User,
         },
@@ -89,7 +89,26 @@ impl Database {
             .ok()?
     }
 
-    pub async fn fetch_holding_by_book_and_holder_id(
+    pub async fn fetch_sharing(&self, sharing_id: Snowflake) -> Option<BookSharing> {
+        let raw = sqlx::query_as!(
+            BookSharingRaw,
+            "SELECT * FROM books_sharing WHERE id = $1",
+            sharing_id.0
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .ok()??;
+
+        self.fetch_book(raw.book_id).await.map(|book| BookSharing {
+            id: raw.id,
+            comment: raw.comment,
+            condition: raw.condition.into(),
+            holder_id: raw.holder_id,
+            book,
+        })
+    }
+
+    pub async fn fetch_sharings_by_book_and_holder_id(
         &self, book_id: Snowflake, holder_id: Snowflake,
     ) -> Option<Vec<BookSharing>> {
         let raws = sqlx::query_as!(
@@ -155,5 +174,16 @@ impl Database {
         }
 
         Some(holders)
+    }
+
+    pub async fn fetch_user_requested_books(&self, user_id: Snowflake) -> Option<Vec<BookRequest>> {
+        sqlx::query_as!(
+            BookRequest,
+            "SELECT * FROM books_requests WHERE borrower_id = $1",
+            user_id.0
+        )
+        .fetch_all(&self.pool)
+        .await
+        .ok()
     }
 }

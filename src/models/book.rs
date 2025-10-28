@@ -8,7 +8,7 @@ use {
     sqlx::{sqlite::SqliteValueRef, Decode, Sqlite, SqliteExecutor},
 };
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum BookCondition {
     /// The book is in perfect condition, as if new
     MintCondition = 0,
@@ -148,8 +148,45 @@ impl BookSharing {
     }
 
     pub async fn save<'a, E: SqliteExecutor<'a>>(self, executor: E) -> HttpResult<Self> {
-        sqlx::query!(r#"INSERT INTO books_sharing(id, book_id, comment, holder_id ) VALUES ($1, $2, $3, $4)"#,
-            self.id.0, self.book.id.0, self.comment, self.holder_id.0
+        sqlx::query!(r#"INSERT INTO books_sharing(id, book_id, comment, holder_id, condition) VALUES ($1, $2, $3, $4, $5)"#,
+            self.id.0, self.book.id.0, self.comment, self.holder_id.0, 0        )
+            .execute(executor).await
+            .map(|_| self)
+            .map_err(HttpError::Database)
+    }
+}
+
+#[derive(Serialize)]
+pub struct BookRequest {
+    pub id: Snowflake,
+    pub book_sharing_id: Snowflake,
+    pub book_id: Snowflake,
+    pub borrower_id: Snowflake,
+    pub is_accepted: Option<bool>,
+    pub accepted_at: Option<NaiveDateTime>,
+    pub borrowed_at: Option<NaiveDateTime>,
+    pub return_at: Option<NaiveDateTime>,
+}
+
+impl BookRequest {
+    pub fn new(
+        id: Snowflake, book_sharing_id: Snowflake, book_id: Snowflake, borrower_id: Snowflake,
+    ) -> Self {
+        Self {
+            id,
+            book_sharing_id,
+            book_id,
+            borrower_id,
+            is_accepted: None,
+            accepted_at: None,
+            borrowed_at: None,
+            return_at: None,
+        }
+    }
+
+    pub async fn save<'a, E: SqliteExecutor<'a>>(self, executor: E) -> HttpResult<Self> {
+        sqlx::query!(r#"INSERT INTO books_requests(id, book_sharing_id, book_id, borrower_id) VALUES ($1, $2, $3, $4)"#,
+            self.id.0, self.book_sharing_id.0, self.book_id.0, self.borrower_id.0
         )
             .execute(executor).await
             .map(|_| self)

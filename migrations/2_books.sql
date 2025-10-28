@@ -20,8 +20,9 @@ CREATE TABLE IF NOT EXISTS books_sharing (
 
 CREATE TABLE IF NOT EXISTS books_requests (
 	id BIGINT UNIQUE NOT NULL PRIMARY KEY,
-	book_holding_id BIGINT NOT NULL,
-	borrower_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+	book_sharing_id BIGINT NOT NULL REFERENCES books_sharing(id) ON DELETE CASCADE,
+	book_id BIGINT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+	borrower_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	is_accepted BOOLEAN DEFAULT NULL,
 	accepted_at TIMESTAMP,
 	borrowed_at TIMESTAMP,
