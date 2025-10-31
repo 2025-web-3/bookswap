@@ -27,6 +27,8 @@ pub type Result<T> = core::result::Result<T, HttpError>;
 pub enum HttpError {
     #[error("Unknown Book")]
     UnknownBook,
+    #[error("Unknown Sharing")]
+    UnknownSharing,
     #[error("{0}")]
     Payload(#[from] actix_web::error::JsonPayloadError),
     #[error("Validation error: {0}")]
@@ -56,7 +58,7 @@ pub enum HttpError {
 impl actix_web::ResponseError for HttpError {
     fn status_code(&self) -> StatusCode {
         match self {
-            HttpError::UnknownBook => StatusCode::NOT_FOUND,
+            HttpError::UnknownBook | HttpError::UnknownSharing => StatusCode::NOT_FOUND,
 
             HttpError::Payload(..)
             | HttpError::Validation(..)
@@ -81,6 +83,7 @@ impl actix_web::ResponseError for HttpError {
             code: match self {
                 // The 1xxxx class of error code indicates that some data wasn't found
                 HttpError::UnknownBook => 10000,
+                HttpError::UnknownSharing => 10001,
 
                 // The 2xxxx class of error code indicates that data was malformed or invalid
                 HttpError::Payload(..) => 20000,

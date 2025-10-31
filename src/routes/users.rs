@@ -36,11 +36,13 @@ async fn get_current_user(credentials: Option<web::ReqData<User>>) -> Result<Htt
 }
 
 async fn get_current_user_book_requests(
-    credentials: Option<web::ReqData<User>>,
+    app: web::Data<App>, credentials: Option<web::ReqData<User>>,
 ) -> Result<HttpResponse> {
-    let _me = credentials.ok_or(HttpError::Unauthorized)?;
+    let me = credentials.ok_or(HttpError::Unauthorized)?;
 
-    return Err(HttpError::MissingAccess);
+    let res = app.database.fetch_user_requested_books(me.id).await.ok_or(HttpError::UnknownBook)?;
+
+    Ok(HttpResponse::Ok().json(res))
 }
 
 async fn get_current_user_requested_books(
@@ -127,19 +129,20 @@ async fn request_book(
 
     let sharings = app
         .database
-        .fetch_sharings_by_book_and_holder_id(path.1.into(), path.0.into())
+        .fetch_sharings_by_book_and_holder_id(path.0.into(), path.1.into())
         .await
-        .ok_or(HttpError::UnknownBook)?;
+        .ok_or(HttpError::UnknownSharing)?;
 
     if sharings.len() > 1 && query.sharing_id.is_none() {
         return Err(HttpError::MissingAccess);
     }
 
-    let reqs =
-        app.database.fetch_user_requested_books(me.id).await.ok_or(HttpError::UnknownBook)?;
+    let reqs = app.database.fetch_user_requested_books(me.id).await;
 
-    if reqs.iter().filter(|x| x.book_id == path.1.into()).count() > 0 {
-        return Err(HttpError::MissingAccess);
+    if reqs.is_some() {
+        if reqs.unwrap().iter().filter(|x| x.book_id == path.1.into()).count() > 0 {
+            return Err(HttpError::MissingAccess);
+        }
     }
 
     let request_id = app.snowflake.lock().unwrap().build();
@@ -152,7 +155,7 @@ async fn request_book(
             .database
             .fetch_sharing(query.sharing_id.unwrap().into())
             .await
-            .ok_or(HttpError::UnknownBook)?;
+            .ok_or(HttpError::UnknownSharing)?;
         BookRequest::new(request_id, sharing.id, sharing.book.id, me.id)
     };
 

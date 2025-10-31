@@ -1,4 +1,4 @@
-use {crate::models::book::BookCondition, serde::Deserialize, validator::Validate};
+use {serde::Deserialize, validator::Validate};
 
 #[derive(Deserialize, Validate)]
 pub struct RegisterPayload {
