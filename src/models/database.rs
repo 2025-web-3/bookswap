@@ -109,7 +109,7 @@ impl Database {
     }
 
     pub async fn fetch_sharings_by_book_and_holder_id(
-        &self, book_id: Snowflake, holder_id: Snowflake,
+        &self, holder_id: Snowflake, book_id: Snowflake,
     ) -> Option<Vec<BookSharing>> {
         let raws = sqlx::query_as!(
             BookSharingRaw,
@@ -176,11 +176,29 @@ impl Database {
         Some(holders)
     }
 
-    pub async fn fetch_user_requested_books(&self, user_id: Snowflake) -> Option<Vec<BookRequest>> {
+    pub async fn fetch_user_requested_books(
+        &self, holder_id: Snowflake,
+    ) -> Option<Vec<BookRequest>> {
         sqlx::query_as!(
             BookRequest,
-            "SELECT * FROM books_requests WHERE borrower_id = $1",
-            user_id.0
+            r#"
+            SELECT
+                br.id,
+                bs.id AS "book_sharing_id",
+                br.book_id,
+                br.borrower_id,
+                br.is_accepted,
+                br.accepted_at,
+                br.borrowed_at,
+                br.return_at
+            FROM
+                books_requests AS br
+            JOIN
+                books_sharing AS bs ON br.book_sharing_id = bs.id
+            WHERE
+                bs.holder_id = $1
+        "#,
+            holder_id.0
         )
         .fetch_all(&self.pool)
         .await

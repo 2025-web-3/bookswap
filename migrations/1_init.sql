@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
 	password_hash varchar NOT NULL,
 	email varchar NOT NULL UNIQUE,
 	school_name varchar,
-	permissions BIGINT DEFAULT 0 NOT NULL
+	permissions BIGINT DEFAULT 7 NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
