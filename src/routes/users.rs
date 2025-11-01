@@ -40,7 +40,7 @@ async fn get_current_user_book_requests(
 ) -> Result<HttpResponse> {
     let me = credentials.ok_or(HttpError::Unauthorized)?;
 
-    let res = app.database.fetch_user_requested_books(me.id).await.ok_or(HttpError::UnknownBook)?;
+    let res = app.database.fetch_user_book_requests(me.id).await.ok_or(HttpError::UnknownBook)?;
 
     Ok(HttpResponse::Ok().json(res))
 }
@@ -61,7 +61,7 @@ async fn get_sharing_by_user_and_book(
 ) -> Result<HttpResponse> {
     let sharings = app
         .database
-        .fetch_sharings_by_book_and_holder_id(path.1.into(), path.0.into())
+        .fetch_sharings_by_book_and_holder_id(path.0.into(), path.1.into())
         .await
         .ok_or(HttpError::UnknownBook)?;
 

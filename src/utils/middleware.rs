@@ -13,7 +13,7 @@ use {
     },
 };
 
-const AUTHLESS_ROUTES: [(Method, &str); 2] = [(Method::POST, "/auth"), (Method::GET, "/books")];
+const AUTHLESS_ROUTES: [(Method, &str); 2] = [(Method::POST, "/auth"), (Method::GET, "/bookses")];
 
 pub async fn authorization_middleware(
     req: ServiceRequest, next: Next<impl MessageBody>,
