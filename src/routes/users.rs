@@ -3,7 +3,7 @@ use {
         models::{
             book::{Book, BookRequest, BookSharing},
             requests::NewBook,
-            user::{Permissions, User},
+            user::User,
         },
         routes::{HttpError, Result},
         App,
@@ -85,9 +85,9 @@ async fn add_new_book(
 ) -> Result<HttpResponse> {
     let me = credentials.ok_or(HttpError::Unauthorized)?;
 
-    if !me.has_permission(Permissions::CREATE_BOOKS) {
-        return Err(HttpError::MissingAccess);
-    }
+    // if !me.has_permission(Permissions::CREATE_BOOKS) {
+    //     return Err(HttpError::MissingAccess);
+    // }
 
     let book = if let Some(book) = app.database.fetch_book_by_isbn(&payload.isbn).await {
         book
@@ -123,9 +123,9 @@ async fn request_book(
 ) -> Result<HttpResponse> {
     let me = credentials.ok_or(HttpError::Unauthorized)?;
 
-    if !me.has_permission(Permissions::REQUEST_BOOKS) {
-        return Err(HttpError::MissingAccess);
-    }
+    // if !me.has_permission(Permissions::REQUEST_BOOKS) {
+    //     return Err(HttpError::MissingAccess);
+    // }
 
     let sharings = app
         .database
