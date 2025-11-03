@@ -44,6 +44,6 @@ Email or username must be specified.
 ##### Response body
 | Field   | Type                            | Description                       |
 |---------|---------------------------------|-----------------------------------|
-| `user`  | [User](./resources#user-object) | The user that session belongs to. |
+| `user`  | [User](./resources/users.md#user-object) | The user that session belongs to. |
 | `token` | string                          | The session token.                |
 
