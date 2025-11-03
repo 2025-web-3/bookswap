@@ -24,19 +24,19 @@ Returns the current [user](#user-object) object.
 ```http
 GET /users/@me/requests
 ```
-Returns a list of [book request](./resources/book.md#book-request-structure) objects.
+Returns a list of [book request](./books.md#book-request-structure) objects.
 
 ## Get Current User's Book Requests
 ```http
 GET /users/@me/books/requests
 ```
-Returns a list of [book request](./resources/book.md#book-request-structure) objects.
+Returns a list of [book request](./books.md#book-request-structure) objects.
 
 ## Add New Book to User Profile
 ```http
 POST /users/@me/books
 ```
-Returns a [book sharing](./resources/book.md#book-sharing-structure) object.
+Returns a [book sharing](./books.md#book-sharing-structure) object.
 
 ##### JSON Payload
 
@@ -56,19 +56,19 @@ Returns a [book sharing](./resources/book.md#book-sharing-structure) object.
 ```http
 GET /users/{user.id}/books/{book.id}
 ```
-Returns a [book sharing](./resources/book.md#book-sharing-structure) object.
+Returns a [book sharing](./books.md#book-sharing-structure) object.
 
 ## Get All Available Books from User
 ```http
 GET /users/{user.id}/books
 ```
-Returns a list of [book](./resources/book.md#book-structure) objects.
+Returns a list of [book](./books.md#book-structure) objects.
 
 ## Request Book from User
 ```http
 POST /users/{user.id}/books/{book.id}/request
 ```
-Returns a [book request](./resources/book.md#book-request-structure) object.
+Returns a [book request](./books.md#book-request-structure) object.
 
 ##### JSON Payload
 
