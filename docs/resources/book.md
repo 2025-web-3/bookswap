@@ -59,7 +59,7 @@ Returns the [book](#book-structure) object for a given book ID.
 ```http
 GET /books/{book.id}/holders
 ```
-Returns a list of [user](#user-object) objects who are current holders of the specified book.
+Returns a list of [user](./users.md#user-object) objects who are current holders of the specified book.
 
 ## Search Books
 ```http
