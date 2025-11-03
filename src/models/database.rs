@@ -194,7 +194,7 @@ impl Database {
             JOIN
                 books_sharing AS bs ON br.book_sharing_id = bs.id
             WHERE
-                bs.holder_id = $1
+                bs.holder_id = $1 AND br.is_accepted IS NULL
         "#,
             holder_id.0
         )
