@@ -1,0 +1,3013 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+
+<head>
+
+   <meta charset="UTF-8">
+
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+   <title>Обмен книгами</title>
+
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+   <style>
+
+       /* Общие стили */
+
+       * {
+
+           margin: 0;
+
+           padding: 0;
+
+           box-sizing: border-box;
+
+           font-family: 'Times New Roman', Times, serif;
+
+       }
+
+
+
+       body {
+
+           background-color: #f5f1e8;
+
+           color: #5d4037;
+
+           line-height: 1.6;
+
+       }
+
+
+
+       .container {
+
+           max-width: 1200px;
+
+           margin: 0 auto;
+
+           padding: 0 20px;
+
+       }
+
+
+
+       /* Кнопки */
+
+       .btn {
+
+           padding: 10px 20px;
+
+           border: none;
+
+           border-radius: 4px;
+
+           cursor: pointer;
+
+           font-size: 16px;
+
+           transition: background-color 0.3s, transform 0.2s;
+
+           background-color: #d7ccc8;
+
+           color: #5d4037;
+
+       }
+
+
+
+       .btn:hover {
+
+           background-color: #bcaaa4;
+
+           transform: translateY(-2px);
+
+       }
+
+
+
+       .btn:active {
+
+           background-color: #8d6e63;
+
+           color: #fff;
+
+           transform: translateY(0);
+
+       }
+
+
+
+       .btn-primary {
+
+           background-color: #a1887f;
+
+           color: white;
+
+       }
+
+
+
+       .btn-primary:hover {
+
+           background-color: #8d6e63;
+
+       }
+
+
+
+       /* Шапка и меню */
+
+       header {
+
+           background-color: #d7ccc8;
+
+           padding: 15px 0;
+
+           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+           position: sticky;
+
+           top: 0;
+
+           z-index: 100;
+
+       }
+
+
+
+       .header-content {
+
+           display: flex;
+
+           justify-content: space-between;
+
+           align-items: center;
+
+       }
+
+
+
+       .logo {
+
+           font-size: 24px;
+
+           font-weight: bold;
+
+           color: #5d4037;
+
+       }
+
+
+
+       .menu-icon {
+
+           font-size: 24px;
+
+           cursor: pointer;
+
+           color: #5d4037;
+
+       }
+
+
+
+       .menu-overlay {
+
+           position: fixed;
+
+           top: 0;
+
+           left: 0;
+
+           width: 100%;
+
+           height: 100%;
+
+           background-color: rgba(0,0,0,0.5);
+
+           display: none;
+
+           z-index: 200;
+
+       }
+
+
+
+       .menu-content {
+
+           position: fixed;
+
+           top: 0;
+
+           right: -300px;
+
+           width: 300px;
+
+           height: 100%;
+
+           background-color: #efebe9;
+
+           transition: right 0.3s;
+
+           padding: 20px;
+
+           box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+
+           z-index: 201;
+
+       }
+
+
+
+       .menu-header {
+
+           display: flex;
+
+           justify-content: space-between;
+
+           align-items: center;
+
+           margin-bottom: 30px;
+
+           padding-bottom: 10px;
+
+           border-bottom: 1px solid #d7ccc8;
+
+       }
+
+
+
+       .close-menu {
+
+           font-size: 24px;
+
+           cursor: pointer;
+
+           color: #5d4037;
+
+       }
+
+
+
+       .menu-buttons {
+
+           display: flex;
+
+           flex-direction: column;
+
+           gap: 15px;
+
+       }
+
+
+
+       .menu-btn {
+
+           display: flex;
+
+           align-items: center;
+
+           gap: 10px;
+
+           padding: 12px;
+
+           background-color: #d7ccc8;
+
+           border: none;
+
+           border-radius: 4px;
+
+           cursor: pointer;
+
+           font-size: 16px;
+
+           transition: background-color 0.3s;
+
+           color: #5d4037;
+
+       }
+
+
+
+       .menu-btn:hover {
+
+           background-color: #bcaaa4;
+
+       }
+
+
+
+       .menu-btn:active {
+
+           background-color: #8d6e63;
+
+           color: #fff;
+
+       }
+
+
+
+       /* Герой-секция */
+
+       .hero {
+
+           position: relative;
+
+           height: 400px;
+
+           background-color: #bcaaa4;
+
+           display: flex;
+
+           align-items: center;
+
+           justify-content: center;
+
+           margin-bottom: 40px;
+
+           overflow: hidden;
+
+       }
+
+
+
+       .hero-image {
+
+           position: absolute;
+
+           top: 0;
+
+           left: 0;
+
+           width: 100%;
+
+           height: 100%;
+
+           background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');
+
+           background-size: cover;
+
+           background-position: center;
+
+           opacity: 0.7;
+
+       }
+
+
+
+       .hero-quote {
+
+           position: relative;
+
+           z-index: 10;
+
+           text-align: center;
+
+           color: #5d4037;
+
+           font-size: 2.5rem;
+
+           font-weight: bold;
+
+           text-shadow: 1px 1px 3px rgba(255,255,255,0.7);
+
+           max-width: 800px;
+
+           padding: 0 20px;
+
+       }
+
+
+
+       .hero-button {
+
+           margin-top: 30px;
+
+       }
+
+
+
+       /* Каталог книг */
+
+       .books-section {
+
+           padding: 40px 0;
+
+       }
+
+
+
+       .section-title {
+
+           text-align: center;
+
+           margin-bottom: 30px;
+
+           font-size: 2rem;
+
+           color: #5d4037;
+
+       }
+
+
+
+       .books-grid {
+
+           display: grid;
+
+           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+
+           gap: 25px;
+
+       }
+
+
+
+       .book-card {
+
+           background: white;
+
+           border-radius: 8px;
+
+           overflow: hidden;
+
+           box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+           transition: transform 0.3s;
+
+           border: 1px solid #d7ccc8;
+
+       }
+
+
+
+       .book-card:hover {
+
+           transform: translateY(-5px);
+
+       }
+
+
+
+       .book-image {
+
+           height: 200px;
+
+           background-color: #efebe9;
+
+           display: flex;
+
+           align-items: center;
+
+           justify-content: center;
+
+           color: #8d6e63;
+
+           font-size: 3rem;
+
+       }
+
+
+
+       .book-info {
+
+           padding: 20px;
+
+       }
+
+
+
+       .book-title {
+
+           font-weight: bold;
+
+           margin-bottom: 10px;
+
+           font-size: 1.2rem;
+
+       }
+
+
+
+       .book-author {
+
+           color: #8d6e63;
+
+           margin-bottom: 15px;
+
+       }
+
+
+
+       .book-holders {
+
+           color: #8d6e63;
+
+           margin-bottom: 15px;
+
+           font-size: 0.9rem;
+
+       }
+
+
+
+       .book-actions {
+
+           display: flex;
+
+           justify-content: space-between;
+
+       }
+
+
+
+       /* Формы */
+
+       .form-container {
+
+           max-width: 500px;
+
+           margin: 50px auto;
+
+           padding: 30px;
+
+           background-color: white;
+
+           border-radius: 8px;
+
+           box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+       }
+
+
+
+       .form-title {
+
+           text-align: center;
+
+           margin-bottom: 30px;
+
+           color: #5d4037;
+
+       }
+
+
+
+       .form-group {
+
+           margin-bottom: 20px;
+
+       }
+
+
+
+       .form-group label {
+
+           display: block;
+
+           margin-bottom: 8px;
+
+           color: #5d4037;
+
+       }
+
+
+
+       .form-group input, .form-group select, .form-group textarea {
+
+           width: 100%;
+
+           padding: 12px;
+
+           border: 1px solid #d7ccc8;
+
+           border-radius: 4px;
+
+           font-size: 16px;
+
+           background-color: #f9f5f2;
+
+       }
+
+
+
+       .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+
+           outline: none;
+
+           border-color: #a1887f;
+
+       }
+
+
+
+       .form-footer {
+
+           text-align: center;
+
+           margin-top: 20px;
+
+       }
+
+
+
+       .form-link {
+
+           color: #8d6e63;
+
+           text-decoration: none;
+
+       }
+
+
+
+       .form-link:hover {
+
+           text-decoration: underline;
+
+       }
+
+
+
+       /* Личный кабинет */
+
+       .profile-header {
+
+           display: flex;
+
+           align-items: center;
+
+           margin-bottom: 30px;
+
+           padding: 20px;
+
+           background-color: white;
+
+           border-radius: 8px;
+
+           box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+       }
+
+
+
+       .avatar {
+
+           width: 120px;
+
+           height: 120px;
+
+           border-radius: 50%;
+
+           background-color: #d7ccc8;
+
+           display: flex;
+
+           align-items: center;
+
+           justify-content: center;
+
+           font-size: 3rem;
+
+           color: #8d6e63;
+
+           margin-right: 30px;
+
+       }
+
+
+
+       .profile-info {
+
+           flex: 1;
+
+       }
+
+
+
+       .profile-name {
+
+           font-size: 1.5rem;
+
+           margin-bottom: 10px;
+
+       }
+
+
+
+       .profile-details {
+
+           display: grid;
+
+           grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+
+           gap: 15px;
+
+           margin-bottom: 20px;
+
+       }
+
+
+
+       .profile-detail {
+
+           display: flex;
+
+           flex-direction: column;
+
+       }
+
+
+
+       .detail-label {
+
+           font-size: 0.9rem;
+
+           color: #8d6e63;
+
+       }
+
+
+
+       .detail-value {
+
+           font-size: 1.1rem;
+
+       }
+
+
+
+       .profile-sections {
+
+           display: grid;
+
+           grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+
+           gap: 25px;
+
+       }
+
+
+
+       .profile-section {
+
+           background-color: white;
+
+           border-radius: 8px;
+
+           padding: 20px;
+
+           box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+       }
+
+
+
+       .section-header {
+
+           display: flex;
+
+           justify-content: space-between;
+
+           align-items: center;
+
+           margin-bottom: 20px;
+
+           padding-bottom: 10px;
+
+           border-bottom: 1px solid #d7ccc8;
+
+       }
+
+
+
+       .section-title {
+
+           font-size: 1.3rem;
+
+           margin: 0;
+
+           text-align: left;
+
+       }
+
+
+
+       .add-btn {
+
+           width: 40px;
+
+           height: 40px;
+
+           border-radius: 50%;
+
+           background-color: #a1887f;
+
+           color: white;
+
+           display: flex;
+
+           align-items: center;
+
+           justify-content: center;
+
+           cursor: pointer;
+
+           transition: background-color 0.3s;
+
+       }
+
+
+
+       .add-btn:hover {
+
+           background-color: #8d6e63;
+
+       }
+
+
+
+       .book-list {
+
+           list-style: none;
+
+       }
+
+
+
+       .book-item {
+
+           padding: 12px;
+
+           border-bottom: 1px solid #efebe9;
+
+           display: flex;
+
+           justify-content: space-between;
+
+           align-items: center;
+
+       }
+
+
+
+       .book-item:last-child {
+
+           border-bottom: none;
+
+       }
+
+
+
+       .book-details {
+
+           flex: 1;
+
+       }
+
+
+
+       .book-meta {
+
+           font-size: 0.9rem;
+
+           color: #8d6e63;
+
+       }
+
+
+
+       .request-actions {
+
+           display: flex;
+
+           gap: 10px;
+
+       }
+
+
+
+       /* Страница книги */
+
+       .book-detail {
+
+           display: flex;
+
+           gap: 30px;
+
+           margin: 40px 0;
+
+       }
+
+
+
+       .book-cover {
+
+           flex: 0 0 300px;
+
+           height: 400px;
+
+           background-color: #efebe9;
+
+           display: flex;
+
+           align-items: center;
+
+           justify-content: center;
+
+           font-size: 4rem;
+
+           color: #8d6e63;
+
+           border-radius: 8px;
+
+       }
+
+
+
+       .book-details {
+
+           flex: 1;
+
+           background-color: white;
+
+           padding: 30px;
+
+           border-radius: 8px;
+
+           box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+       }
+
+
+
+       .book-detail-title {
+
+           font-size: 2rem;
+
+           margin-bottom: 10px;
+
+       }
+
+
+
+       .book-detail-author {
+
+           font-size: 1.3rem;
+
+           color: #8d6e63;
+
+           margin-bottom: 20px;
+
+       }
+
+
+
+       .book-detail-info {
+
+           margin-bottom: 30px;
+
+       }
+
+
+
+       .info-item {
+
+           margin-bottom: 10px;
+
+       }
+
+
+
+       .info-label {
+
+           font-weight: bold;
+
+           color: #5d4037;
+
+       }
+
+
+
+       /* Владельцы книги */
+
+       .holders-section {
+
+           margin-top: 30px;
+
+       }
+
+
+
+       .holder-card {
+
+           background-color: #f9f5f2;
+
+           border-radius: 8px;
+
+           padding: 20px;
+
+           margin-bottom: 15px;
+
+           border: 1px solid #d7ccc8;
+
+       }
+
+
+
+       .holder-header {
+
+           display: flex;
+
+           justify-content: space-between;
+
+           align-items: center;
+
+           margin-bottom: 10px;
+
+       }
+
+
+
+       .holder-name {
+
+           font-weight: bold;
+
+           font-size: 1.1rem;
+
+       }
+
+
+
+       .holder-school {
+
+           color: #8d6e63;
+
+           margin-bottom: 10px;
+
+       }
+
+
+
+       .sharing-info {
+
+           display: flex;
+
+           justify-content: space-between;
+
+           align-items: center;
+
+           margin-bottom: 15px;
+
+       }
+
+
+
+       .condition-badge {
+
+           padding: 5px 10px;
+
+           border-radius: 4px;
+
+           background-color: #d7ccc8;
+
+           font-size: 0.9rem;
+
+       }
+
+
+
+       /* Модальные окна */
+
+       .modal-overlay {
+
+           position: fixed;
+
+           top: 0;
+
+           left: 0;
+
+           width: 100%;
+
+           height: 100%;
+
+           background-color: rgba(0,0,0,0.5);
+
+           display: flex;
+
+           align-items: center;
+
+           justify-content: center;
+
+           z-index: 300;
+
+       }
+
+
+
+       /* Утилиты */
+
+       .hidden {
+
+           display: none;
+
+       }
+
+
+
+       .text-center {
+
+           text-align: center;
+
+       }
+
+
+
+       .mt-20 {
+
+           margin-top: 20px;
+
+       }
+
+
+
+       .mb-20 {
+
+           margin-bottom: 20px;
+
+       }
+
+
+
+       .loading {
+
+           text-align: center;
+
+           padding: 20px;
+
+           color: #8d6e63;
+
+       }
+
+
+
+       .error-message {
+
+           background-color: #ffebee;
+
+           color: #c62828;
+
+           padding: 10px;
+
+           border-radius: 4px;
+
+           margin-bottom: 15px;
+
+           text-align: center;
+
+       }
+
+   </style>
+
+</head>
+
+<body>
+
+   <!-- Шапка с меню -->
+
+   <header>
+
+       <div class="container">
+
+           <div class="header-content">
+
+               <div class="logo">BookSwap</div>
+
+               <div class="menu-icon" id="menuToggle">
+
+                   <i class="fas fa-bars"></i>
+
+               </div>
+
+           </div>
+
+       </div>
+
+   </header>
+
+
+
+   <!-- Меню -->
+
+   <div class="menu-overlay" id="menuOverlay">
+
+       <div class="menu-content" id="menuContent">
+
+           <div class="menu-header">
+
+               <h2>Меню</h2>
+
+               <div class="close-menu" id="closeMenu">
+
+                   <i class="fas fa-times"></i>
+
+               </div>
+
+           </div>
+
+           <div class="menu-buttons">
+
+               <button class="menu-btn" id="searchBtn">
+
+                   <i class="fas fa-search"></i>
+
+                   Поиск
+
+               </button>
+
+               <button class="menu-btn" id="contactsBtn">
+
+                   <i class="fab fa-telegram"></i>
+
+                   Контакты
+
+               </button>
+
+               <button class="menu-btn" id="profileBtn">
+
+                   <i class="fas fa-user"></i>
+
+                   Личный кабинет
+
+               </button>
+
+               <button class="menu-btn" id="logoutBtn">
+
+                   <i class="fas fa-sign-out-alt"></i>
+
+                   Выйти
+
+               </button>
+
+           </div>
+
+       </div>
+
+   </div>
+
+
+
+   <!-- Главная страница -->
+
+   <section id="homePage" class="page">
+
+       <div class="hero">
+
+           <div class="hero-image"></div>
+
+           <div class="hero-quote">
+
+               ОСВОБОДИ КНИГУ ОТ ПЫЛЬНОГО ПЛЕНА!
+
+               <div class="hero-button">
+
+                   <button class="btn btn-primary" id="allBooksBtn">Все книги</button>
+
+               </div>
+
+           </div>
+
+       </div>
+
+
+
+       <div class="container">
+
+           <div class="books-section hidden" id="allBooksSection">
+
+               <h2 class="section-title">Все доступные книги</h2>
+
+               <div class="books-grid" id="allBooksGrid">
+
+                   <!-- Книги будут загружены через JavaScript -->
+
+               </div>
+
+           </div>
+
+       </div>
+
+   </section>
+
+
+
+   <!-- Страница входа -->
+
+   <section id="loginPage" class="page hidden">
+
+       <div class="form-container">
+
+           <h2 class="form-title">Вход в личный кабинет</h2>
+
+           <div id="loginError" class="error-message hidden"></div>
+
+           <div class="form-group">
+
+               <label for="username">Имя пользователя или email</label>
+
+               <input type="text" id="username" placeholder="Введите имя пользователя или email">
+
+           </div>
+
+           <div class="form-group">
+
+               <label for="password">Пароль</label>
+
+               <input type="password" id="password" placeholder="Введите пароль">
+
+           </div>
+
+           <button class="btn btn-primary" id="loginBtn">Войти</button>
+
+           <div class="form-footer">
+
+               <p>Нет аккаунта? <a href="#" class="form-link" id="registerLink">Зарегистрироваться</a></p>
+
+           </div>
+
+       </div>
+
+   </section>
+
+
+
+   <!-- Страница регистрации -->
+
+   <section id="registerPage" class="page hidden">
+
+       <div class="form-container">
+
+           <h2 class="form-title">Регистрация</h2>
+
+           <div id="registerError" class="error-message hidden"></div>
+
+           <div class="form-group">
+
+               <label for="regUsername">Имя пользователя</label>
+
+               <input type="text" id="regUsername" placeholder="Придумайте имя пользователя">
+
+           </div>
+
+           <div class="form-group">
+
+               <label for="regEmail">Email</label>
+
+               <input type="email" id="regEmail" placeholder="Введите ваш email">
+
+           </div>
+
+           <div class="form-group">
+
+               <label for="regFirstName">Имя</label>
+
+               <input type="text" id="regFirstName" placeholder="Введите ваше имя">
+
+           </div>
+
+           <div class="form-group">
+
+               <label for="regSecondName">Фамилия</label>
+
+               <input type="text" id="regSecondName" placeholder="Введите вашу фамилию">
+
+           </div>
+
+           <div class="form-group">
+
+               <label for="regSchool">Школа (необязательно)</label>
+
+               <input type="text" id="regSchool" placeholder="Введите название школы">
+
+           </div>
+
+           <div class="form-group">
+
+               <label for="regPassword">Пароль</label>
+
+               <input type="password" id="regPassword" placeholder="Придумайте пароль">
+
+           </div>
+
+           <button class="btn btn-primary" id="registerBtn">Зарегистрироваться</button>
+
+           <div class="form-footer">
+
+               <p>Уже есть аккаунт? <a href="#" class="form-link" id="loginLink">Войти</a></p>
+
+           </div>
+
+       </div>
+
+   </section>
+
+
+
+   <!-- Страница поиска -->
+
+   <section id="searchPage" class="page hidden">
+
+       <div class="container">
+
+           <div class="form-container">
+
+               <h2 class="form-title">Поиск книг</h2>
+
+               <div class="form-group">
+
+                   <input type="text" id="searchInput" placeholder="Введите название книги">
+
+               </div>
+
+               <button class="btn btn-primary" id="searchBooksBtn">Найти</button>
+
+           </div>
+
+
+
+           <div class="books-section hidden" id="searchResults">
+
+               <h2 class="section-title">Результаты поиска</h2>
+
+               <div class="books-grid" id="searchResultsGrid">
+
+                   <!-- Результаты поиска будут загружены через JavaScript -->
+
+               </div>
+
+           </div>
+
+       </div>
+
+   </section>
+
+
+
+   <!-- Личный кабинет -->
+
+   <section id="profilePage" class="page hidden">
+
+       <div class="container">
+
+           <div class="profile-header">
+
+               <div class="avatar">
+
+                   <i class="fas fa-user"></i>
+
+               </div>
+
+               <div class="profile-info">
+
+                   <div class="profile-name" id="profileName">Загрузка...</div>
+
+                   <div class="profile-details">
+
+                       <div class="profile-detail">
+
+                           <span class="detail-label">Имя</span>
+
+                           <span class="detail-value" id="profileFirstName">-</span>
+
+                       </div>
+
+                       <div class="profile-detail">
+
+                           <span class="detail-label">Фамилия</span>
+
+                           <span class="detail-value" id="profileSecondName">-</span>
+
+                       </div>
+
+                       <div class="profile-detail">
+
+                           <span class="detail-label">Email</span>
+
+                           <span class="detail-value" id="profileEmail">-</span>
+
+                       </div>
+
+                       <div class="profile-detail">
+
+                           <span class="detail-label">Школа</span>
+
+                           <span class="detail-value" id="profileSchool">-</span>
+
+                       </div>
+
+                   </div>
+
+               </div>
+
+           </div>
+
+
+
+           <div class="profile-sections">
+
+               <div class="profile-section">
+
+                   <div class="section-header">
+
+                       <h3 class="section-title">Мои книги</h3>
+
+                       <div class="add-btn" id="addBookBtn">
+
+                           <i class="fas fa-plus"></i>
+
+                       </div>
+
+                   </div>
+
+                   <ul class="book-list" id="myBooksList">
+
+                       <li class="loading">Загрузка...</li>
+
+                   </ul>
+
+               </div>
+
+
+
+               <div class="profile-section">
+
+                   <div class="section-header">
+
+                       <h3 class="section-title">Входящие запросы</h3>
+
+                   </div>
+
+                   <ul class="book-list" id="incomingRequestsList">
+
+                       <li class="loading">Загрузка...</li>
+
+                   </ul>
+
+               </div>
+
+
+
+               <div class="profile-section">
+
+                   <div class="section-header">
+
+                       <h3 class="section-title">Исходящие запросы</h3>
+
+                   </div>
+
+                   <ul class="book-list" id="outgoingRequestsList">
+
+                       <li class="loading">Загрузка...</li>
+
+                   </ul>
+
+               </div>
+
+           </div>
+
+       </div>
+
+   </section>
+
+
+
+   <!-- Страница книги -->
+
+   <section id="bookPage" class="page hidden">
+
+       <div class="container">
+
+           <div class="book-detail">
+
+               <div class="book-cover">
+
+                   <i class="fas fa-book"></i>
+
+               </div>
+
+               <div class="book-details">
+
+                   <h1 class="book-detail-title" id="bookDetailTitle">Название книги</h1>
+
+                   <div class="book-detail-author" id="bookDetailAuthor">Автор книги</div>
+
+
+
+                   <div class="book-detail-info">
+
+                       <div class="info-item">
+
+                           <span class="info-label">Описание:</span> <span id="bookDetailDescription">-</span>
+
+                       </div>
+
+                       <div class="info-item">
+
+                           <span class="info-label">Тематика:</span> <span id="bookDetailSubjects">-</span>
+
+                       </div>
+
+                       <div class="info-item">
+
+                           <span class="info-label">Количество страниц:</span> <span id="bookDetailPages">-</span>
+
+                       </div>
+
+                   </div>
+
+
+
+                   <div class="holders-section">
+
+                       <h3 class="section-title">Владельцы книги</h3>
+
+                       <div id="bookHoldersList" class="loading">
+
+                           Загрузка...
+
+                       </div>
+
+                   </div>
+
+               </div>
+
+           </div>
+
+       </div>
+
+   </section>
+
+
+
+   <!-- Модальное окно для добавления книги -->
+
+   <div class="modal-overlay hidden" id="addBookModal">
+
+       <div class="form-container">
+
+           <h2 class="form-title">Добавить книгу</h2>
+
+           <div id="addBookError" class="error-message hidden"></div>
+
+           <div class="form-group">
+
+               <label for="bookIsbn">ISBN</label>
+
+               <input type="text" id="bookIsbn" placeholder="Введите ISBN книги (10-13 символов)">
+
+           </div>
+
+           <div class="form-group">
+
+               <label for="bookComment">Комментарий (необязательно)</label>
+
+               <textarea id="bookComment" placeholder="Дополнительная информация о книге"></textarea>
+
+           </div>
+
+           <div class="form-group">
+
+               <label for="bookCondition">Состояние книги</label>
+
+               <select id="bookCondition">
+
+                   <option value="0">Идеальное состояние</option>
+
+                   <option value="1">Почти идеальное</option>
+
+                   <option value="2" selected>Аккуратно использовалась</option>
+
+                   <option value="3">Небольшие повреждения</option>
+
+                   <option value="4">Сильно использовалась</option>
+
+               </select>
+
+           </div>
+
+           <div class="form-group">
+
+               <button class="btn btn-primary" id="saveBookBtn">Добавить книгу</button>
+
+               <button class="btn" id="cancelBookBtn">Отмена</button>
+
+           </div>
+
+       </div>
+
+   </div>
+
+
+
+   <script>
+
+       // Конфигурация API
+
+       const API_BASE_URL = 'http://localhost:8080/api/v1';
+
+
+
+       // Данные приложения
+
+       let currentUser = null;
+
+       let authToken = localStorage.getItem('authToken');
+
+
+
+       // Элементы DOM
+
+       const menuToggle = document.getElementById('menuToggle');
+
+       const menuOverlay = document.getElementById('menuOverlay');
+
+       const menuContent = document.getElementById('menuContent');
+
+       const closeMenu = document.getElementById('closeMenu');
+
+
+
+       const pages = document.querySelectorAll('.page');
+
+       const homePage = document.getElementById('homePage');
+
+       const loginPage = document.getElementById('loginPage');
+
+       const registerPage = document.getElementById('registerPage');
+
+       const searchPage = document.getElementById('searchPage');
+
+       const profilePage = document.getElementById('profilePage');
+
+       const bookPage = document.getElementById('bookPage');
+
+
+
+       const allBooksBtn = document.getElementById('allBooksBtn');
+
+       const allBooksSection = document.getElementById('allBooksSection');
+
+       const allBooksGrid = document.getElementById('allBooksGrid');
+
+
+
+       const searchBtn = document.getElementById('searchBtn');
+
+       const contactsBtn = document.getElementById('contactsBtn');
+
+       const profileBtn = document.getElementById('profileBtn');
+
+       const logoutBtn = document.getElementById('logoutBtn');
+
+
+
+       const loginBtn = document.getElementById('loginBtn');
+
+       const loginError = document.getElementById('loginError');
+
+       const registerLink = document.getElementById('registerLink');
+
+       const registerBtn = document.getElementById('registerBtn');
+
+       const registerError = document.getElementById('registerError');
+
+       const loginLink = document.getElementById('loginLink');
+
+
+
+       const searchBooksBtn = document.getElementById('searchBooksBtn');
+
+       const searchInput = document.getElementById('searchInput');
+
+       const searchResults = document.getElementById('searchResults');
+
+       const searchResultsGrid = document.getElementById('searchResultsGrid');
+
+
+
+       const addBookBtn = document.getElementById('addBookBtn');
+
+       const addBookModal = document.getElementById('addBookModal');
+
+       const addBookError = document.getElementById('addBookError');
+
+       const saveBookBtn = document.getElementById('saveBookBtn');
+
+       const cancelBookBtn = document.getElementById('cancelBookBtn');
+
+
+
+       const myBooksList = document.getElementById('myBooksList');
+
+       const incomingRequestsList = document.getElementById('incomingRequestsList');
+
+       const outgoingRequestsList = document.getElementById('outgoingRequestsList');
+
+
+
+       // Функции API
+
+       async function apiRequest(url, options = {}) {
+
+           const config = {
+
+               headers: {
+
+                   'Content-Type': 'application/json',
+
+               },
+
+               ...options
+
+           };
+
+
+
+           if (authToken) {
+
+               config.headers.Authorization = authToken;
+
+           }
+
+
+
+           try {
+
+               const response = await fetch(`${API_BASE_URL}${url}`, config);
+
+
+
+               if (response.status === 401) {
+
+                   // Unauthorized - clear token and redirect to login
+
+                   clearAuth();
+
+                   showPage(loginPage);
+
+                   throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+
+               }
+
+
+
+               if (!response.ok) {
+
+                   const errorData = await response.json().catch(() => ({}));
+
+                   throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+
+               }
+
+
+
+               return await response.json();
+
+           } catch (error) {
+
+               console.error('API request failed:', error);
+
+               throw error;
+
+           }
+
+       }
+
+
+
+       // Функции для работы с пользователями
+
+       async function registerUser(userData) {
+
+           return await apiRequest('/auth/register', {
+
+               method: 'POST',
+
+               body: JSON.stringify(userData)
+
+           });
+
+       }
+
+
+
+       async function loginUser(credentials) {
+
+           return await apiRequest('/auth/login', {
+
+               method: 'POST',
+
+               body: JSON.stringify(credentials)
+
+           });
+
+       }
+
+
+
+       async function getCurrentUser() {
+
+           return await apiRequest('/users/@me');
+
+       }
+
+
+
+       async function getUserBooks(userId) {
+
+           return await apiRequest(`/users/${userId}/books`);
+
+       }
+
+
+
+       async function addBookToProfile(bookData) {
+
+           return await apiRequest('/users/@me/books', {
+
+               method: 'POST',
+
+               body: JSON.stringify(bookData)
+
+           });
+
+       }
+
+
+
+       async function getMyRequests() {
+
+           return await apiRequest('/users/@me/requests');
+
+       }
+
+
+
+       async function getMyBookRequests() {
+
+           return await apiRequest('/users/@me/books/requests');
+
+       }
+
+
+
+       async function requestBook(userId, bookId, sharingId = null) {
+
+           const payload = {};
+
+           if (sharingId) {
+
+               payload.sharing_id = sharingId;
+
+           }
+
+
+
+           return await apiRequest(`/users/${userId}/books/${bookId}/request`, {
+
+               method: 'POST',
+
+               body: JSON.stringify(payload)
+
+           });
+
+       }
+
+
+
+       async function changeRequestStatus(requestId, isAccepted) {
+
+           return await apiRequest(`/books/requests/${requestId}`, {
+
+               method: 'PATCH',
+
+               body: JSON.stringify({ is_accepted: isAccepted })
+
+           });
+
+       }
+
+
+
+       // Функции для работы с книгами
+
+       async function getBook(bookId) {
+
+           return await apiRequest(`/books/${bookId}`);
+
+       }
+
+
+
+       async function getBookHolders(bookId) {
+
+           return await apiRequest(`/books/${bookId}/holders`);
+
+       }
+
+
+
+       async function searchBooks(query) {
+
+           return await apiRequest(`/books/search?query=${encodeURIComponent(query)}`);
+
+       }
+
+
+
+       async function getUserBookSharing(userId, bookId) {
+
+           return await apiRequest(`/users/${userId}/books/${bookId}`);
+
+       }
+
+
+
+       // Вспомогательные функции
+
+       function showPage(page) {
+
+           pages.forEach(p => p.classList.add('hidden'));
+
+           page.classList.remove('hidden');
+
+       }
+
+
+
+       function closeMenuFunc() {
+
+           menuOverlay.style.display = 'none';
+
+           menuContent.style.right = '-300px';
+
+       }
+
+
+
+       function showError(element, message) {
+
+           element.textContent = message;
+
+           element.classList.remove('hidden');
+
+       }
+
+
+
+       function hideError(element) {
+
+           element.classList.add('hidden');
+
+           element.textContent = '';
+
+       }
+
+
+
+       function setAuthToken(token) {
+
+           authToken = token;
+
+           localStorage.setItem('authToken', token);
+
+       }
+
+
+
+       function clearAuth() {
+
+           authToken = null;
+
+           localStorage.removeItem('authToken');
+
+           currentUser = null;
+
+       }
+
+
+
+       function formatBookCondition(condition) {
+
+           const conditions = {
+
+               0: 'Идеальное состояние',
+
+               1: 'Почти идеальное',
+
+               2: 'Аккуратно использовалась',
+
+               3: 'Небольшие повреждения',
+
+               4: 'Сильно использовалась'
+
+           };
+
+           return conditions[condition] || 'Неизвестно';
+
+       }
+
+
+
+       // Функции отрисовки
+
+       function renderBooks(booksArray, container) {
+
+           container.innerHTML = '';
+
+
+
+           if (booksArray.length === 0) {
+
+               container.innerHTML = '<p class="text-center">Книги не найдены</p>';
+
+               return;
+
+           }
+
+
+
+           booksArray.forEach(book => {
+
+               const bookCard = document.createElement('div');
+
+               bookCard.className = 'book-card';
+
+               bookCard.innerHTML = `
+
+                   <div class="book-image">
+
+                       ${book.cover_url
+
+                           ? `<img src="${book.cover_url}" alt="${book.title}" style="width: 100%; height: 100%; object-fit: cover;">`
+
+                           : `<i class="fas fa-book"></i>`
+
+                       }
+
+                   </div>
+
+                   <div class="book-info">
+
+                       <div class="book-title">${book.title}</div>
+
+                       <div class="book-author">${book.author}</div>
+
+                       <div class="book-holders">${book.holders ? `${book.holders.length} владельцев` : ''}</div>
+
+                       <div class="book-actions">
+
+                           <button class="btn" onclick="viewBook('${book.id}')">Подробнее</button>
+
+                       </div>
+
+                   </div>
+
+               `;
+
+               container.appendChild(bookCard);
+
+           });
+
+       }
+
+
+
+       async function viewBook(bookId) {
+
+           try {
+
+               const book = await getBook(bookId);
+
+               const holders = await getBookHolders(bookId);
+
+
+
+               document.getElementById('bookDetailTitle').textContent = book.title;
+
+               document.getElementById('bookDetailAuthor').textContent = book.author;
+
+               document.getElementById('bookDetailDescription').textContent = book.description || '-';
+
+               document.getElementById('bookDetailSubjects').textContent = book.subjects || '-';
+
+               document.getElementById('bookDetailPages').textContent = book.pages || '-';
+
+
+
+               // Отрисовка списка владельцев
+
+               const holdersList = document.getElementById('bookHoldersList');
+
+               holdersList.innerHTML = '';
+
+
+
+               if (holders && holders.length > 0) {
+
+                   for (const holder of holders) {
+
+                       // Для каждого владельца получаем информацию о его копии книги
+
+                       let sharing = null;
+
+                       try {
+
+                           sharing = await getUserBookSharing(holder.id, bookId);
+
+                       } catch (error) {
+
+                           console.error(`Failed to get sharing for user ${holder.id} and book ${bookId}:`, error);
+
+                       }
+
+
+
+                       const holderCard = document.createElement('div');
+
+                       holderCard.className = 'holder-card';
+
+                       holderCard.innerHTML = `
+
+                           <div class="holder-header">
+
+                               <div class="holder-name">${holder.first_name} ${holder.second_name}</div>
+
+                           </div>
+
+                           <div class="holder-school">${holder.school_name || 'Школа не указана'}</div>
+
+                           ${sharing ? `
+
+                               <div class="sharing-info">
+
+                                   <div>Комментарий: ${sharing.comment || 'нет'}</div>
+
+                                   <div class="condition-badge">${formatBookCondition(sharing.condition)}</div>
+
+                               </div>
+
+                               <div class="mt-20">
+
+                                   <button class="btn btn-primary" onclick="requestBookFromUser('${holder.id}', '${bookId}', '${sharing.id}')">
+
+                                       Запросить книгу
+
+                                   </button>
+
+                               </div>
+
+                           ` : '<p>Информация о книге недоступна</p>'}
+
+                       `;
+
+                       holdersList.appendChild(holderCard);
+
+                   }
+
+               } else {
+
+                   holdersList.innerHTML = '<p class="text-center">Владельцы не найдены</p>';
+
+               }
+
+
+
+               showPage(bookPage);
+
+           } catch (error) {
+
+               console.error('Failed to load book details:', error);
+
+               alert('Ошибка при загрузке информации о книге');
+
+           }
+
+       }
+
+
+
+       async function requestBookFromUser(userId, bookId, sharingId) {
+
+           if (!currentUser) {
+
+               showPage(loginPage);
+
+               return;
+
+           }
+
+
+
+           try {
+
+               await requestBook(userId, bookId, sharingId);
+
+               alert('Запрос на книгу успешно отправлен!');
+
+               showPage(profilePage);
+
+               updateProfile();
+
+           } catch (error) {
+
+               console.error('Failed to request book:', error);
+
+               alert('Ошибка при отправке запроса: ' + error.message);
+
+           }
+
+       }
+
+
+
+       async function updateProfile() {
+
+           if (!currentUser) return;
+
+
+
+           try {
+
+               // Обновляем информацию о пользователе
+
+               const user = await getCurrentUser();
+
+               document.getElementById('profileName').textContent = user.username;
+
+               document.getElementById('profileFirstName').textContent = user.first_name;
+
+               document.getElementById('profileSecondName').textContent = user.second_name;
+
+               document.getElementById('profileEmail').textContent = user.email;
+
+               document.getElementById('profileSchool').textContent = user.school_name || 'Не указана';
+
+
+
+               // Загружаем книги пользователя
+
+               const userBooks = await getUserBooks(user.id);
+
+               myBooksList.innerHTML = '';
+
+
+
+               if (userBooks.length > 0) {
+
+                   userBooks.forEach(bookSharing => {
+
+                       const bookItem = document.createElement('li');
+
+                       bookItem.className = 'book-item';
+
+                       bookItem.innerHTML = `
+
+                           <div class="book-details">
+
+                               <div>${bookSharing.book.title}</div>
+
+                               <div class="book-meta">${bookSharing.book.author}</div>
+
+                               <div class="book-meta">Состояние: ${formatBookCondition(bookSharing.condition)}</div>
+
+                               ${bookSharing.comment ? `<div class="book-meta">Комментарий: ${bookSharing.comment}</div>` : ''}
+
+                           </div>
+
+                       `;
+
+                       myBooksList.appendChild(bookItem);
+
+                   });
+
+               } else {
+
+                   myBooksList.innerHTML = '<li class="text-center">У вас пока нет книг</li>';
+
+               }
+
+
+
+               // Загружаем входящие запросы
+
+               const incomingRequests = await getMyBookRequests();
+
+               incomingRequestsList.innerHTML = '';
+
+
+
+               if (incomingRequests.length > 0) {
+
+                   incomingRequests.forEach(request => {
+
+                       const requestItem = document.createElement('li');
+
+                       requestItem.className = 'book-item';
+
+                       requestItem.innerHTML = `
+
+                           <div class="book-details">
+
+                               <div>${request.book_id}</div>
+
+                               <div class="book-meta">От пользователя ID: ${request.borrower_id}</div>
+
+                               <div class="book-meta">Статус: ${request.is_accepted === null ? 'Ожидает' : request.is_accepted ? 'Принят' : 'Отклонен'}</div>
+
+                           </div>
+
+                           ${request.is_accepted === null ? `
+
+                               <div class="request-actions">
+
+                                   <button class="btn" onclick="handleRequest('${request.id}', true)">Принять</button>
+
+                                   <button class="btn" onclick="handleRequest('${request.id}', false)">Отклонить</button>
+
+                               </div>
+
+                           ` : ''}
+
+                       `;
+
+                       incomingRequestsList.appendChild(requestItem);
+
+                   });
+
+               } else {
+
+                   incomingRequestsList.innerHTML = '<li class="text-center">Входящих запросов нет</li>';
+
+               }
+
+
+
+               // Загружаем исходящие запросы
+
+               const outgoingRequests = await getMyRequests();
+
+               outgoingRequestsList.innerHTML = '';
+
+
+
+               if (outgoingRequests.length > 0) {
+
+                   outgoingRequests.forEach(request => {
+
+                       const requestItem = document.createElement('li');
+
+                       requestItem.className = 'book-item';
+
+                       requestItem.innerHTML = `
+
+                           <div class="book-details">
+
+                               <div>Книга ID: ${request.book_id}</div>
+
+                               <div class="book-meta">Владелец ID: ${request.book_sharing_id}</div>
+
+                               <div class="book-meta">Статус: ${request.is_accepted === null ? 'Ожидает' : request.is_accepted ? 'Принят' : 'Отклонен'}</div>
+
+                           </div>
+
+                       `;
+
+                       outgoingRequestsList.appendChild(requestItem);
+
+                   });
+
+               } else {
+
+                   outgoingRequestsList.innerHTML = '<li class="text-center">Исходящих запросов нет</li>';
+
+               }
+
+
+
+           } catch (error) {
+
+               console.error('Failed to update profile:', error);
+
+               myBooksList.innerHTML = '<li class="text-center">Ошибка при загрузке книг</li>';
+
+               incomingRequestsList.innerHTML = '<li class="text-center">Ошибка при загрузке запросов</li>';
+
+               outgoingRequestsList.innerHTML = '<li class="text-center">Ошибка при загрузке запросов</li>';
+
+               alert('Ошибка при загрузке данных профиля: ' + error.message);
+
+           }
+
+       }
+
+
+
+       async function handleRequest(requestId, isAccepted) {
+
+           try {
+
+               await changeRequestStatus(requestId, isAccepted);
+
+               updateProfile();
+
+           } catch (error) {
+
+               console.error('Failed to handle request:', error);
+
+               alert('Ошибка при обработке запроса');
+
+           }
+
+       }
+
+
+
+       async function loadAllBooks() {
+
+           try {
+
+               // Используем поиск с пустым запросом для получения всех книг
+
+               const books = await searchBooks('');
+
+               renderBooks(books, allBooksGrid);
+
+               allBooksSection.classList.remove('hidden');
+
+           } catch (error) {
+
+               console.error('Failed to load all books:', error);
+
+               allBooksGrid.innerHTML = '<p class="text-center">Ошибка при загрузке книг: ' + error.message + '</p>';
+
+           }
+
+       }
+
+
+
+       // Обработчики событий
+
+       menuToggle.addEventListener('click', () => {
+
+           menuOverlay.style.display = 'block';
+
+           setTimeout(() => {
+
+               menuContent.style.right = '0';
+
+           }, 10);
+
+       });
+
+
+
+       closeMenu.addEventListener('click', closeMenuFunc);
+
+       menuOverlay.addEventListener('click', (e) => {
+
+           if (e.target === menuOverlay) {
+
+               closeMenuFunc();
+
+           }
+
+       });
+
+
+
+       // Навигация по меню
+
+       searchBtn.addEventListener('click', () => {
+
+           showPage(searchPage);
+
+           closeMenuFunc();
+
+       });
+
+
+
+       contactsBtn.addEventListener('click', () => {
+
+           alert('Телеграм создателя: @bookswap_creator');
+
+           closeMenuFunc();
+
+       });
+
+
+
+       profileBtn.addEventListener('click', () => {
+
+           if (currentUser) {
+
+               showPage(profilePage);
+
+               updateProfile();
+
+           } else {
+
+               showPage(loginPage);
+
+           }
+
+           closeMenuFunc();
+
+       });
+
+
+
+       logoutBtn.addEventListener('click', () => {
+
+           clearAuth();
+
+           showPage(homePage);
+
+           closeMenuFunc();
+
+           alert('Вы вышли из системы');
+
+       });
+
+
+
+       // Главная страница
+
+       allBooksBtn.addEventListener('click', () => {
+
+           if (currentUser) {
+
+               loadAllBooks();
+
+           } else {
+
+               showPage(loginPage);
+
+           }
+
+       });
+
+
+
+       // Авторизация
+
+       loginBtn.addEventListener('click', async () => {
+
+           const username = document.getElementById('username').value;
+
+           const password = document.getElementById('password').value;
+
+
+
+           hideError(loginError);
+
+
+
+           if (!username || !password) {
+
+               showError(loginError, 'Пожалуйста, заполните все поля');
+
+               return;
+
+           }
+
+
+
+           try {
+
+               const credentials = { password };
+
+
+
+               if (username.includes('@')) {
+
+                   credentials.email = username;
+
+               } else {
+
+                   credentials.username = username;
+
+               }
+
+
+
+               const result = await loginUser(credentials);
+
+
+
+               setAuthToken(result.token);
+
+               currentUser = result.user;
+
+
+
+               showPage(profilePage);
+
+               updateProfile();
+
+           } catch (error) {
+
+               showError(loginError, 'Ошибка входа: ' + error.message);
+
+           }
+
+       });
+
+
+
+       registerLink.addEventListener('click', (e) => {
+
+           e.preventDefault();
+
+           showPage(registerPage);
+
+       });
+
+
+
+       registerBtn.addEventListener('click', async () => {
+
+           const username = document.getElementById('regUsername').value;
+
+           const email = document.getElementById('regEmail').value;
+
+           const firstName = document.getElementById('regFirstName').value;
+
+           const secondName = document.getElementById('regSecondName').value;
+
+           const school = document.getElementById('regSchool').value;
+
+           const password = document.getElementById('regPassword').value;
+
+
+
+           hideError(registerError);
+
+
+
+           if (!username || !email || !firstName || !secondName || !password) {
+
+               showError(registerError, 'Пожалуйста, заполните все обязательные поля');
+
+               return;
+
+           }
+
+
+
+           try {
+
+               const userData = {
+
+                   username,
+
+                   email,
+
+                   first_name: firstName,
+
+                   second_name: secondName,
+
+                   password
+
+               };
+
+
+
+               if (school) {
+
+                   userData.school_name = school;
+
+               }
+
+
+
+               const result = await registerUser(userData);
+
+
+
+               setAuthToken(result.token);
+
+               currentUser = result.user;
+
+
+
+               showPage(profilePage);
+
+               updateProfile();
+
+           } catch (error) {
+
+               showError(registerError, 'Ошибка регистрации: ' + error.message);
+
+           }
+
+       });
+
+
+
+       loginLink.addEventListener('click', (e) => {
+
+           e.preventDefault();
+
+           showPage(loginPage);
+
+       });
+
+
+
+       // Поиск
+
+       searchBooksBtn.addEventListener('click', async () => {
+
+           const query = searchInput.value.trim();
+
+
+
+           if (!query) {
+
+               alert('Пожалуйста, введите запрос для поиска');
+
+               return;
+
+           }
+
+
+
+           try {
+
+               const results = await searchBooks(query);
+
+
+
+               if (results.length > 0) {
+
+                   searchResults.classList.remove('hidden');
+
+                   renderBooks(results, searchResultsGrid);
+
+               } else {
+
+                   searchResults.classList.remove('hidden');
+
+                   searchResultsGrid.innerHTML = '<p class="text-center">Книги по вашему запросу не найдены</p>';
+
+               }
+
+           } catch (error) {
+
+               console.error('Search failed:', error);
+
+               searchResults.classList.remove('hidden');
+
+               searchResultsGrid.innerHTML = '<p class="text-center">Ошибка при поиске книг: ' + error.message + '</p>';
+
+           }
+
+       });
+
+
+
+       // Добавление книги
+
+       addBookBtn.addEventListener('click', () => {
+
+           addBookModal.classList.remove('hidden');
+
+       });
+
+
+
+       saveBookBtn.addEventListener('click', async () => {
+
+           const isbn = document.getElementById('bookIsbn').value;
+
+           const comment = document.getElementById('bookComment').value;
+
+           const condition = parseInt(document.getElementById('bookCondition').value);
+
+
+
+           hideError(addBookError);
+
+
+
+           if (!isbn || isbn.length < 10 || isbn.length > 13) {
+
+               showError(addBookError, 'ISBN должен содержать от 10 до 13 символов');
+
+               return;
+
+           }
+
+
+
+           try {
+
+               await addBookToProfile({
+
+                   isbn,
+
+                   comment: comment || undefined,
+
+                   condition
+
+               });
+
+
+
+               updateProfile();
+
+               addBookModal.classList.add('hidden');
+
+
+
+               // Очистка полей
+
+               document.getElementById('bookIsbn').value = '';
+
+               document.getElementById('bookComment').value = '';
+
+               document.getElementById('bookCondition').value = '2';
+
+
+
+               alert('Книга успешно добавлена в ваш профиль!');
+
+           } catch (error) {
+
+               showError(addBookError, 'Ошибка при добавлении книги: ' + error.message);
+
+           }
+
+       });
+
+
+
+       cancelBookBtn.addEventListener('click', () => {
+
+           addBookModal.classList.add('hidden');
+
+           hideError(addBookError);
+
+       });
+
+
+
+       // Инициализация
+
+       document.addEventListener('DOMContentLoaded', async () => {
+
+           showPage(homePage);
+
+
+
+           // Проверяем, есть ли сохраненный токен
+
+           if (authToken) {
+
+               try {
+
+                   currentUser = await getCurrentUser();
+
+                   // Автоматически показываем профиль если пользователь авторизован
+
+                   showPage(profilePage);
+
+                   updateProfile();
+
+               } catch (error) {
+
+                   console.error('Failed to restore session:', error);
+
+                   clearAuth();
+
+                   // Показываем сообщение об ошибке?
+
+                   alert('Не удалось восстановить сессию. Пожалуйста, войдите снова.');
+
+               }
+
+           }
+
+       });
+
+   </script>
+
+</body>
+
+</html>
