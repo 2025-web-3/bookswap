@@ -14,7 +14,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("search", web::get().to(book_search))
             .route("{book_id}", web::get().to(get_book_by_id))
             .route("{book_id}/holders", web::get().to(get_holders_by_book_id))
-            .route("books/requests/{request_id}", web::patch().to(update_requests_acceptance)),
+            .route("requests/{request_id}", web::patch().to(update_requests_acceptance)),
     );
 }
 
