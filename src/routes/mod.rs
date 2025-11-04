@@ -1,15 +1,19 @@
 use {
     crate::{models::error, utils::middleware::authorization_middleware},
-    actix_web::{
-        http::StatusCode,
-        middleware::from_fn,
-        {web, HttpResponse},
-    },
+    actix_web::{http::StatusCode, middleware::from_fn, web, HttpResponse},
+    std::fs,
 };
 
 mod auth;
 mod books;
 mod users;
+
+async fn index() -> Result<HttpResponse> {
+    let html = fs::read_to_string("static/index.html")
+        .unwrap_or_else(|_| "<h1>Sorry! Something went wrong!</h1>".to_string());
+
+    Ok(HttpResponse::Ok().content_type("text/html").body(html))
+}
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -18,7 +22,8 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .configure(users::config)
             .configure(books::config)
             .wrap(from_fn(authorization_middleware)),
-    );
+    )
+    .service(web::resource("/").to(index));
 }
 
 pub type Result<T> = core::result::Result<T, HttpError>;
