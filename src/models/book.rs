@@ -148,8 +148,10 @@ impl BookSharing {
     }
 
     pub async fn save<'a, E: SqliteExecutor<'a>>(self, executor: E) -> HttpResult<Self> {
+        let condition: i64 = self.condition.into();
+
         sqlx::query!(r#"INSERT INTO books_sharing(id, book_id, comment, holder_id, condition) VALUES ($1, $2, $3, $4, $5)"#,
-            self.id.0, self.book.id.0, self.comment, self.holder_id.0, 0        )
+            self.id.0, self.book.id.0, self.comment, self.holder_id.0, condition)
             .execute(executor).await
             .map(|_| self)
             .map_err(HttpError::Database)
