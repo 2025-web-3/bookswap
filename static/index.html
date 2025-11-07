@@ -961,16 +961,13 @@
 
 
   <script>
-      // Конфигурация API
       const API_BASE_URL = 'http://localhost:8080/api/v1';
 
 
-      // Данные приложения
       let currentUser = null;
       let authToken = localStorage.getItem('authToken');
 
 
-      // Элементы DOM
       const menuToggle = document.getElementById('menuToggle');
       const menuOverlay = document.getElementById('menuOverlay');
       const menuContent = document.getElementById('menuContent');
@@ -1023,7 +1020,6 @@
       const outgoingRequestsList = document.getElementById('outgoingRequestsList');
 
 
-      // Функции API
       async function apiRequest(url, options = {}) {
           const config = {
               headers: {
@@ -1064,7 +1060,6 @@
       }
 
 
-      // Функции для работы с пользователями
       async function registerUser(userData) {
           return await apiRequest('/auth/register', {
               method: 'POST',
@@ -1131,7 +1126,6 @@
       }
 
 
-      // Функции для работы с книгами
       async function getBook(bookId) {
           return await apiRequest(`/books/${bookId}`);
       }
@@ -1152,7 +1146,16 @@
       }
 
 
-      // Вспомогательные функции
+      async function getBookDetails(bookId) {
+          return await apiRequest(`/books/${bookId}`);
+      }
+
+
+      async function getUserDetails(userId) {
+          return await apiRequest(`/users/${userId}`);
+      }
+
+
       function showPage(page) {
           pages.forEach(p => p.classList.add('hidden'));
           page.classList.remove('hidden');
@@ -1202,7 +1205,6 @@
       }
 
 
-      // Функции отрисовки
       function renderBooks(booksArray, container) {
           container.innerHTML = '';
 
@@ -1250,14 +1252,12 @@
               document.getElementById('bookDetailPages').textContent = book.pages || '-';
 
 
-              // Отрисовка списка владельцев
               const holdersList = document.getElementById('bookHoldersList');
               holdersList.innerHTML = '';
 
 
               if (holders && holders.length > 0) {
                   for (const holder of holders) {
-                      // Для каждого владельца получаем информацию о его копии книги
                       let sharing = null;
                       try {
                           sharing = await getUserBookSharing(holder.id, bookId);
@@ -1324,7 +1324,6 @@
 
 
           try {
-              // Обновляем информацию о пользователе
               const user = await getCurrentUser();
               document.getElementById('profileName').textContent = user.username;
               document.getElementById('profileFirstName').textContent = user.first_name;
@@ -1333,7 +1332,6 @@
               document.getElementById('profileSchool').textContent = user.school_name || 'Не указана';
 
 
-              // Загружаем книги пользователя
               const userBooks = await getUserBooks(user.id);
               myBooksList.innerHTML = '';
 
@@ -1355,19 +1353,36 @@
               }
 
 
-              // Загружаем входящие запросы
               const incomingRequests = await getMyBookRequests();
               incomingRequestsList.innerHTML = '';
 
 
               if (incomingRequests.length > 0) {
-                  incomingRequests.forEach(request => {
+                  for (const request of incomingRequests) {
+                      let bookTitle = `Книга ID: ${request.book_id}`;
+                      let userName = `Пользователь ID: ${request.borrower_id}`;
+
+                      try {
+                          const bookDetails = await getBookDetails(request.book_id);
+                          bookTitle = bookDetails.title;
+                      } catch (error) {
+                          console.error(`Failed to get book details for ${request.book_id}:`, error);
+                      }
+
+                      try {
+                          const userDetails = await getUserDetails(request.borrower_id);
+                          userName = `${userDetails.first_name} ${userDetails.second_name}`;
+                      } catch (error) {
+                          console.error(`Failed to get user details for ${request.borrower_id}:`, error);
+                      }
+
+
                       const requestItem = document.createElement('li');
                       requestItem.className = 'book-item';
                       requestItem.innerHTML = `
                           <div class="book-details">
-                              <div>${request.book_id}</div>
-                              <div class="book-meta">От пользователя ID: ${request.borrower_id}</div>
+                              <div>${bookTitle}</div>
+                              <div class="book-meta">От: ${userName}</div>
                               <div class="book-meta">Статус: ${request.is_accepted === null ? 'Ожидает' : request.is_accepted ? 'Принят' : 'Отклонен'}</div>
                           </div>
                           ${request.is_accepted === null ? `
@@ -1378,30 +1393,52 @@
                           ` : ''}
                       `;
                       incomingRequestsList.appendChild(requestItem);
-                  });
+                  }
               } else {
                   incomingRequestsList.innerHTML = '<li class="text-center">Входящих запросов нет</li>';
               }
 
 
-              // Загружаем исходящие запросы
               const outgoingRequests = await getMyRequests();
               outgoingRequestsList.innerHTML = '';
 
 
               if (outgoingRequests.length > 0) {
-                  outgoingRequests.forEach(request => {
+                  for (const request of outgoingRequests) {
+                      let bookTitle = `Книга ID: ${request.book_id}`;
+                      let ownerName = `Владелец ID: ${request.book_sharing_id}`;
+
+                      try {
+                          const bookDetails = await getBookDetails(request.book_id);
+                          bookTitle = bookDetails.title;
+                      } catch (error) {
+                          console.error(`Failed to get book details for ${request.book_id}:`, error);
+                      }
+
+                      if (request.book_sharing_id) {
+                          try {
+                              const sharingInfo = await apiRequest(`/books/sharings/${request.book_sharing_id}`);
+                              if (sharingInfo && sharingInfo.holder_id) {
+                                  const ownerDetails = await getUserDetails(sharingInfo.holder_id);
+                                  ownerName = `${ownerDetails.first_name} ${ownerDetails.second_name}`;
+                              }
+                          } catch (error) {
+                              console.error(`Failed to get owner details for sharing ${request.book_sharing_id}:`, error);
+                          }
+                      }
+
+
                       const requestItem = document.createElement('li');
                       requestItem.className = 'book-item';
                       requestItem.innerHTML = `
                           <div class="book-details">
-                              <div>Книга ID: ${request.book_id}</div>
-                              <div class="book-meta">Владелец ID: ${request.book_sharing_id}</div>
+                              <div>${bookTitle}</div>
+                              <div class="book-meta">Владелец: ${ownerName}</div>
                               <div class="book-meta">Статус: ${request.is_accepted === null ? 'Ожидает' : request.is_accepted ? 'Принят' : 'Отклонен'}</div>
                           </div>
                       `;
                       outgoingRequestsList.appendChild(requestItem);
-                  });
+                  }
               } else {
                   outgoingRequestsList.innerHTML = '<li class="text-center">Исходящих запросов нет</li>';
               }
@@ -1420,6 +1457,7 @@
       async function handleRequest(requestId, isAccepted) {
           try {
               await changeRequestStatus(requestId, isAccepted);
+              alert(`Запрос ${isAccepted ? 'принят' : 'отклонен'}!`);
               updateProfile();
           } catch (error) {
               console.error('Failed to handle request:', error);
@@ -1601,7 +1639,6 @@
       });
 
 
-      // Поиск
       searchBooksBtn.addEventListener('click', async () => {
           const query = searchInput.value.trim();
 
@@ -1631,7 +1668,6 @@
       });
 
 
-      // Добавление книги
       addBookBtn.addEventListener('click', () => {
           addBookModal.classList.remove('hidden');
       });
@@ -1664,7 +1700,6 @@
               addBookModal.classList.add('hidden');
 
 
-              // Очистка полей
               document.getElementById('bookIsbn').value = '';
               document.getElementById('bookComment').value = '';
               document.getElementById('bookCondition').value = '2';
@@ -1683,22 +1718,18 @@
       });
 
 
-      // Инициализация
       document.addEventListener('DOMContentLoaded', async () => {
           showPage(homePage);
 
 
-          // Проверяем, есть ли сохраненный токен
           if (authToken) {
               try {
                   currentUser = await getCurrentUser();
-                  // Автоматически показываем профиль если пользователь авторизован
                   showPage(profilePage);
                   updateProfile();
               } catch (error) {
                   console.error('Failed to restore session:', error);
                   clearAuth();
-                  // Показываем сообщение об ошибке?
                   alert('Не удалось восстановить сессию. Пожалуйста, войдите снова.');
               }
           }
