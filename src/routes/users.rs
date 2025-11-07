@@ -24,6 +24,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             )
             .service(
                 web::scope("{user_id}")
+                    .route("", web::get().to(get_user))
                     .route("books/{book_id}", web::get().to(get_sharing_by_user_and_book))
                     .route("books/{book_id}/request", web::post().to(request_book))
                     .route("books", web::get().to(get_all_avalible_books_from_user)),
@@ -33,6 +34,13 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 
 async fn get_current_user(credentials: Option<web::ReqData<User>>) -> Result<HttpResponse> {
     credentials.ok_or(HttpError::Unauthorized).map(|row| HttpResponse::Ok().json(row.into_inner()))
+}
+
+async fn get_user(app: web::Data<App>, path: web::Path<i64>) -> Result<HttpResponse> {
+    let res =
+        app.database.fetch_user(path.to_owned().into()).await.ok_or(HttpError::UnknownBook)?;
+
+    Ok(HttpResponse::Ok().json(res))
 }
 
 async fn get_current_user_book_requests(
@@ -116,7 +124,6 @@ struct BookSharingIdQuery {
     pub sharing_id: Option<i64>,
 }
 
-/// TODO: Add new errors for specific situations
 async fn request_book(
     path: web::Path<(i64, i64)>, query: web::Query<BookSharingIdQuery>, app: web::Data<App>,
     credentials: Option<web::ReqData<User>>,
@@ -134,14 +141,14 @@ async fn request_book(
         .ok_or(HttpError::UnknownSharing)?;
 
     if sharings.len() > 1 && query.sharing_id.is_none() {
-        return Err(HttpError::MissingAccess);
+        return Err(HttpError::AlreadyRequested);
     }
 
     let reqs = app.database.fetch_user_requested_books(me.id).await;
 
     if reqs.is_some() {
         if reqs.unwrap().iter().filter(|x| x.book_id == path.1.into()).count() > 0 {
-            return Err(HttpError::MissingAccess);
+            return Err(HttpError::AlreadyRequested);
         }
     }
 

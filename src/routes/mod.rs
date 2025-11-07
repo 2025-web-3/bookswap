@@ -34,6 +34,8 @@ pub enum HttpError {
     UnknownBook,
     #[error("Unknown Sharing")]
     UnknownSharing,
+    #[error("Resource has already been requested")]
+    AlreadyRequested,
     #[error("{0}")]
     Payload(#[from] actix_web::error::JsonPayloadError),
     #[error("Validation error: {0}")]
@@ -77,7 +79,7 @@ impl actix_web::ResponseError for HttpError {
 
             HttpError::Unauthorized => StatusCode::UNAUTHORIZED,
 
-            HttpError::MissingAccess => StatusCode::FORBIDDEN,
+            HttpError::MissingAccess | HttpError::AlreadyRequested => StatusCode::FORBIDDEN,
 
             HttpError::Database(..) => StatusCode::INTERNAL_SERVER_ERROR,
         }
@@ -100,6 +102,7 @@ impl actix_web::ResponseError for HttpError {
                 HttpError::Database(..) => 20007,
                 HttpError::TakenUsername => 20010,
                 HttpError::TakenEmail => 20011,
+                HttpError::AlreadyRequested => 20012,
 
                 // The 3xxxx class of error code indicates that authorization process failed
                 HttpError::Unauthorized => 30000,

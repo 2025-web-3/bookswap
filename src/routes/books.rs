@@ -14,7 +14,8 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("search", web::get().to(book_search))
             .route("{book_id}", web::get().to(get_book_by_id))
             .route("{book_id}/holders", web::get().to(get_holders_by_book_id))
-            .route("requests/{request_id}", web::patch().to(update_requests_acceptance)),
+            .route("requests/{request_id}", web::patch().to(update_requests_acceptance))
+            .route("sharings/{sharing_id}", web::get().to(get_sharing)),
     );
 }
 
@@ -68,12 +69,22 @@ async fn update_requests_acceptance(
     let request_id = path.to_owned();
 
     sqlx::query!(
-        "UPDATE books_requests SET is_accepted = $1 AND accepted_at = CURRENT_TIMESTAMP WHERE id = $2",
+        "UPDATE books_requests SET is_accepted = $1, accepted_at = CURRENT_TIMESTAMP WHERE id = $2 AND is_accepted IS NULL RETURNING id",
         payload.is_accepted, request_id
     )
-    .execute(&app.pool)
+    .fetch_one(&app.pool)
     .await
     .map_err(|err| HttpError::Database(err))?;
 
     Ok(HttpResponse::NoContent().finish())
+}
+
+async fn get_sharing(app: web::Data<App>, path: web::Path<i64>) -> Result<HttpResponse> {
+    let res = app
+        .database
+        .fetch_sharing(path.to_owned().into())
+        .await
+        .ok_or(HttpError::UnknownSharing)?;
+
+    Ok(HttpResponse::Ok().json(res))
 }
