@@ -5,10 +5,12 @@ use {
     },
     chrono::NaiveDateTime,
     serde::{Deserialize, Serialize},
+    serde_repr::*,
     sqlx::{sqlite::SqliteValueRef, Decode, Sqlite, SqliteExecutor},
 };
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy)]
+#[repr(i64)]
 pub enum BookCondition {
     /// The book is in perfect condition, as if new
     MintCondition = 0,
