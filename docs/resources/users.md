@@ -20,6 +20,12 @@ GET /users/@me
 ```
 Returns the current [user](#user-object) object.
 
+## Get User
+```http
+GET /users/{user.id}
+```
+Returns the [user](#user-object) object by given ID.
+
 ## Get Current User's Requested Books
 ```http
 GET /users/@me/requests
