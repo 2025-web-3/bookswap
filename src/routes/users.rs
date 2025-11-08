@@ -93,6 +93,8 @@ async fn add_new_book(
 ) -> Result<HttpResponse> {
     let me = credentials.ok_or(HttpError::Unauthorized)?;
 
+    payload.validate().map_err(|err| HttpError::Validation(err))?;
+
     // if !me.has_permission(Permissions::CREATE_BOOKS) {
     //     return Err(HttpError::MissingAccess);
     // }
