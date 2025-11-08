@@ -141,14 +141,20 @@ async fn request_book(
         .ok_or(HttpError::UnknownSharing)?;
 
     if sharings.len() > 1 && query.sharing_id.is_none() {
-        return Err(HttpError::AlreadyRequested);
+        return Err(HttpError::BookRequest(
+            "More than 1 sharing was found, please specify sharing_id".to_string(),
+        ));
+    }
+
+    if sharings.first().unwrap().holder_id == me.id {
+        return Err(HttpError::BookRequest("You cannot request your own book".to_string()));
     }
 
     let reqs = app.database.fetch_user_requested_books(me.id).await;
 
     if reqs.is_some() {
         if reqs.unwrap().iter().filter(|x| x.book_id == path.1.into()).count() > 0 {
-            return Err(HttpError::AlreadyRequested);
+            return Err(HttpError::BookRequest("Book has already been requested".to_string()));
         }
     }
 
