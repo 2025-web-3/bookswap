@@ -106,15 +106,10 @@ async fn add_new_book(
 
     let sharing_id = app.snowflake.lock().unwrap().build();
 
-    let sharing = BookSharing::new(
-        sharing_id,
-        book,
-        payload.comment.clone(),
-        me.id,
-        payload.condition.clone().into(),
-    )
-    .save(&app.pool)
-    .await?;
+    let sharing =
+        BookSharing::new(sharing_id, book, payload.comment.clone(), me.id, payload.condition)
+            .save(&app.pool)
+            .await?;
 
     Ok(HttpResponse::Ok().json(sharing))
 }
