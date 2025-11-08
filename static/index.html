@@ -1045,12 +1045,14 @@
                   throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
               }
 
+			  if (response.status === 204) {
+				  return
+			  }
 
               if (!response.ok) {
                   const errorData = await response.json().catch(() => ({}));
-                  throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+				  throw new Error(`\n\n${errorData.code}: ${errorData.description}`);
               }
-
 
               return await response.json();
           } catch (error) {
@@ -1228,7 +1230,6 @@
                   <div class="book-info">
                       <div class="book-title">${book.title}</div>
                       <div class="book-author">${book.author}</div>
-                      <div class="book-holders">${book.holders ? `${book.holders.length} владельцев` : ''}</div>
                       <div class="book-actions">
                           <button class="btn" onclick="viewBook('${book.id}')">Подробнее</button>
                       </div>
@@ -1260,31 +1261,40 @@
                   for (const holder of holders) {
                       let sharing = null;
                       try {
-                          sharing = await getUserBookSharing(holder.id, bookId);
-                      } catch (error) {
-                          console.error(`Failed to get sharing for user ${holder.id} and book ${bookId}:`, error);
-                      }
+        				    const sharingArray = await getUserBookSharing(holder.id, bookId);
 
+        				    sharing = sharingArray && sharingArray.length > 0
+        				        ? sharingArray.find(s => s.book && s.book.holder_id === holder.id)
+        				        : null;
+
+        				    if (!sharing && sharingArray && sharingArray.length > 0) {
+        				        sharing = sharingArray[0];
+        				    }
+        				} catch (error) {
+        				    console.error(`Failed to get sharing for user ${holder.id} and book ${bookId}:`, error);
+        				}
+
+					  console.log(sharing, sharing.comment, sharing.condition, formatBookCondition(sharing.condition));
 
                       const holderCard = document.createElement('div');
                       holderCard.className = 'holder-card';
                       holderCard.innerHTML = `
-                          <div class="holder-header">
-                              <div class="holder-name">${holder.first_name} ${holder.second_name}</div>
-                          </div>
-                          <div class="holder-school">${holder.school_name || 'Школа не указана'}</div>
-                          ${sharing ? `
-                              <div class="sharing-info">
-                                  <div>Комментарий: ${sharing.comment || 'нет'}</div>
-                                  <div class="condition-badge">${formatBookCondition(sharing.condition)}</div>
-                              </div>
-                              <div class="mt-20">
-                                  <button class="btn btn-primary" onclick="requestBookFromUser('${holder.id}', '${bookId}', '${sharing.id}')">
-                                      Запросить книгу
-                                  </button>
-                              </div>
-                          ` : '<p>Информация о книге недоступна</p>'}
-                      `;
+						    <div class="holder-header">
+						        <div class="holder-name">${holder.first_name} ${holder.second_name}</div>
+						    </div>
+						    <div class="holder-school">${holder.school_name || 'Школа не указана'}</div>
+						    ${sharing ? `
+						        <div class="sharing-info">
+						            <div>Комментарий: ${sharing.comment || 'нет'}</div>
+						            <div class="condition-badge">Состояние: ${formatBookCondition(sharing.condition)}</div>
+						        </div>
+						        <div class="mt-20">
+						            <button class="btn btn-primary" onclick="requestBookFromUser('${holder.id}', '${bookId}', '${sharing.id}')">
+						                Запросить книгу
+						            </button>
+						        </div>
+						    ` : '<p>Информация о книге недоступна</p>'}
+						`;
                       holdersList.appendChild(holderCard);
                   }
               } else {
