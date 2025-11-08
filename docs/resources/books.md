@@ -67,6 +67,12 @@ GET /books/search?query=
 ```
 Returns a list of [book](#book-structure) objects by their title (query).
 
+## Get Sharing By ID
+```http
+GET /books/sharings/{sharing.id}
+```
+Returns the [sharing](#book-sharing-structure) object for a given sharing ID.
+
 ## Change Request Status
 ```http
 PATCH /books/requests/{request.id}
