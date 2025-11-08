@@ -1,4 +1,4 @@
-use {serde::Deserialize, validator::Validate};
+use {crate::models::book::BookCondition, serde::Deserialize, validator::Validate};
 
 #[derive(Deserialize, Validate)]
 pub struct RegisterPayload {
@@ -57,5 +57,5 @@ pub struct NewBook {
         message = "Comment length must be between 2 and 1024 characters"
     ))]
     pub comment: Option<String>,
-    pub condition: i64,
+    pub condition: BookCondition,
 }
