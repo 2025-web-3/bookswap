@@ -84,8 +84,8 @@ Returns a [book request](./books.md#book-request-structure) object.
 
 ##### Possible Errors
 
-| Error Code | HTTP Status | Description |
+| Error | HTTP Status | Description |
 |------------|-------------|-------------|
-| MissingAccess | 403 Forbidden | 1. If sharing ID was not specified and there are more than 1 sharing in user profile<br>2. If book ID is in your sharings |
+| BookRequest | 403 Forbidden | 1. If sharing ID was not specified and there are more than 1 sharing in user profile<br>2. If book ID is in your sharings |
 | UnknownBook | 404 Not Found | The specified book does not exist |
 | UnknownSharing | 404 Not Found | The specified sharing does not exist |
