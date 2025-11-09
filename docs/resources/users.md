@@ -20,7 +20,7 @@ GET /users/@me
 ```
 Returns the current [user](#user-object) object.
 
-## Get User
+## Get User by ID
 ```http
 GET /users/{user.id}
 ```
@@ -54,7 +54,7 @@ Returns a [book sharing](./books.md#book-sharing-structure) object.
 
 ##### Possible Errors
 
-| Error Code | HTTP Status | Description |
+| Error      | HTTP Status | Description |
 |------------|-------------|-------------|
 | Unauthorized | 401 Unauthorized | User is not authenticated |
 
@@ -76,7 +76,7 @@ POST /users/{user.id}/books/{book.id}/request
 ```
 Returns a [book request](./books.md#book-request-structure) object.
 
-##### JSON Payload
+##### JSON Query
 
 | Field       | Type      | Description                          |
 |-------------|-----------|--------------------------------------|
@@ -84,7 +84,7 @@ Returns a [book request](./books.md#book-request-structure) object.
 
 ##### Possible Errors
 
-| Error | HTTP Status | Description |
+| Error      | HTTP Status | Description |
 |------------|-------------|-------------|
 | BookRequest | 403 Forbidden | 1. If sharing ID was not specified and there are more than 1 sharing in user profile<br>2. If book ID is in your sharings |
 | UnknownBook | 404 Not Found | The specified book does not exist |
