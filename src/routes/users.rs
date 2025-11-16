@@ -10,6 +10,7 @@ use {
     },
     actix_web::{web, HttpResponse},
     serde::Deserialize,
+    validator::Validate,
 };
 
 pub fn config(cfg: &mut web::ServiceConfig) {
